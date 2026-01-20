@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillBarter - Skills Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <div class="nav-brand">
+                <h1>SkillBarter</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="skills.html" class="active">Skills</a></li>
+                <li><a href="availability.html">Availability</a></li>
+                <li><a href="matching.html">Matching</a></li>
+                <li><a href="session.html">Sessions</a></li>
+                <li><a href="ratings.html">Ratings</a></li>
+                <li><a href="#" id="logout">Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <div class="skills-container">
+                <h1>Manage Your Skills</h1>
+
+                <div class="skills-section">
+                    <h2>Skills I Can Teach</h2>
+                    <div class="skill-tags" id="teach-skills">
+                        <!-- Teach skills will be populated by JS -->
+                    </div>
+                    <div class="add-skill">
+                        <input type="text" id="new-teach-skill" placeholder="Add a skill you can teach">
+                        <button class="btn btn-primary" onclick="addTeachSkill()">Add Skill</button>
+                    </div>
+                </div>
+
+                <div class="skills-section">
+                    <h2>Skills I Want to Learn</h2>
+                    <div class="skill-tags" id="learn-skills">
+                        <!-- Learn skills will be populated by JS -->
+                    </div>
+                    <div class="add-skill">
+                        <input type="text" id="new-learn-skill" placeholder="Add a skill you want to learn">
+                        <button class="btn btn-primary" onclick="addLearnSkill()">Add Skill</button>
+                    </div>
+                </div>
+
+                <div class="skills-section">
+                    <h2>Skill Exchange Suggestions</h2>
+                    <div id="skill-suggestions">
+                        <!-- Suggestions will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="data.js"></script>
+    <script>
+        // Skills page specific JS
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSkills();
+        });
+
+        function loadSkills() {
+            // Load teach skills
+            const teachContainer = document.getElementById('teach-skills');
+            teachContainer.innerHTML = '';
+            mockUser.teachSkills.forEach(skill => {
+                const skillEl = document.createElement('div');
+                skillEl.className = 'skill-tag';
+                skillEl.innerHTML = `
+                    <span>${skill}</span>
+                    <button onclick="removeTeachSkill('${skill}')">&times;</button>
+                `;
+                teachContainer.appendChild(skillEl);
+            });
+
+            // Load learn skills
+            const learnContainer = document.getElementById('learn-skills');
+            learnContainer.innerHTML = '';
+            mockUser.learnSkills.forEach(skill => {
+                const skillEl = document.createElement('div');
+                skillEl.className = 'skill-tag';
+                skillEl.innerHTML = `
+                    <span>${skill}</span>
+                    <button onclick="removeLearnSkill('${skill}')">&times;</button>
+                `;
+                learnContainer.appendChild(skillEl);
+            });
+
+            // Load suggestions
+            const suggestionsContainer = document.getElementById('skill-suggestions');
+            suggestionsContainer.innerHTML = '';
+            mockSkillSuggestions.forEach(suggestion => {
+                const suggestionEl = document.createElement('div');
+                suggestionEl.className = 'suggestion-card';
+                suggestionEl.innerHTML = `
+                    <h4>${suggestion.skill}</h4>
+                    <p>Available teachers: ${suggestion.teachers.join(', ')}</p>
+                    <button class="btn btn-secondary" onclick="addLearnSkill('${suggestion.skill}')">Add to Learn</button>
+                `;
+                suggestionsContainer.appendChild(suggestionEl);
+            });
+        }
+
+        function addTeachSkill() {
+            const input = document.getElementById('new-teach-skill');
+            const skill = input.value.trim();
+            if (skill && !mockUser.teachSkills.includes(skill)) {
+                mockUser.teachSkills.push(skill);
+                input.value = '';
+                loadSkills();
+            }
+        }
+
+        function addLearnSkill(skill) {
+            if (skill && !mockUser.learnSkills.includes(skill)) {
+                mockUser.learnSkills.push(skill);
+                loadSkills();
+            }
+        }
+
+        function removeTeachSkill(skill) {
+            mockUser.teachSkills = mockUser.teachSkills.filter(s => s !== skill);
+            loadSkills();
+        }
+
+        function removeLearnSkill(skill) {
+            mockUser.learnSkills = mockUser.learnSkills.filter(s => s !== skill);
+            loadSkills();
+        }
+    </script>
+</body>
+</html>

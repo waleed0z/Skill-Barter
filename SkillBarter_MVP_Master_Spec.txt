@@ -1,0 +1,297 @@
+
+====================================================
+SKILLBARTER MVP — MASTER SPECIFICATION FILE
+====================================================
+
+This file contains TWO sections:
+
+SECTION A: PRODUCT REQUIREMENTS DOCUMENT (PRD)
+SECTION B: FRONTEND DEVELOPMENT PROMPT
+
+This file is designed to be pasted directly into an AI system
+or shared with team members for immediate understanding.
+
+====================================================
+SECTION A — PRODUCT REQUIREMENTS DOCUMENT (PRD)
+====================================================
+
+PROJECT NAME: SkillBarter
+TEAM: Team Titan
+EVENT: CWT Hackathon
+DATE: January 2026
+BACKEND STACK: Node.js
+SCOPE: MVP ONLY
+
+----------------------------------------------------
+1. PRODUCT OVERVIEW
+----------------------------------------------------
+
+SkillBarter is a time-banking learning exchange platform where
+users teach skills they already have to earn Time Credits and
+spend those credits to learn new skills from others.
+
+CORE RULE:
+1 hour of teaching = 1 Time Credit = 1 hour of learning
+
+No money, no subscriptions — only skills.
+
+----------------------------------------------------
+2. PROBLEM STATEMENT
+----------------------------------------------------
+
+- Quality tutoring and upskilling are expensive
+- Many people already have valuable skills but no money
+- Skill exchange today is informal, unstructured, and not scalable
+
+RESULT:
+Wasted human potential and unequal access to education.
+
+----------------------------------------------------
+3. GOALS (MVP)
+----------------------------------------------------
+
+- Enable peer-to-peer learning without money
+- Treat time as the universal learning currency
+- Support indirect skill exchange through chains
+- Deliver a fully working end-to-end demo
+
+SUCCESS CRITERIA:
+- Users complete learning sessions
+- Time credits update correctly
+- At least one 3-way exchange chain works in demo
+
+----------------------------------------------------
+4. TARGET USERS
+----------------------------------------------------
+
+Primary:
+- Students
+- Early-career professionals
+- Self-learners
+
+Secondary (future):
+- Community learning groups
+- NGOs
+
+----------------------------------------------------
+5. CORE INNOVATION — SKILL EXCHANGE CHAINS
+----------------------------------------------------
+
+SkillBarter supports indirect exchanges.
+
+Example 3-user chain:
+User A teaches User B
+User B teaches User C
+User C teaches User A
+
+Each user:
+- Teaches once
+- Learns once
+- Earns 1 credit
+- Spends 1 credit
+
+MVP LIMITATION:
+Only direct (2-user) and 3-user chains are supported.
+
+----------------------------------------------------
+6. HIGH-LEVEL USER FLOW
+----------------------------------------------------
+
+1. User signs up
+2. User adds skills they can teach and want to learn
+3. System finds direct or 3-way matches
+4. Session is scheduled
+5. Lesson happens via video
+6. Time credits are updated
+
+----------------------------------------------------
+7. MVP SCOPE (IN-SCOPE)
+----------------------------------------------------
+
+- Authentication
+- User profiles
+- Skill management
+- Time credit system
+- Direct & 3-way matching
+- Scheduling & calendar
+- Video sessions (Jitsi)
+- Ratings
+
+----------------------------------------------------
+8. OUT OF SCOPE
+----------------------------------------------------
+
+- Payments
+- Mobile apps
+- AI recommendations
+- Advanced moderation
+- Long exchange chains (4+ users)
+
+----------------------------------------------------
+9. FUNCTIONAL REQUIREMENTS (SUMMARY)
+----------------------------------------------------
+
+AUTH:
+- User registration & login
+
+SKILLS:
+- Teach skills
+- Learn skills
+
+MATCHING:
+- Direct matches
+- 3-user chains only
+
+CREDITS:
+- Earn on completed sessions
+- Spend on booking
+
+SCHEDULING:
+- Availability
+- No double booking
+
+VIDEO:
+- Jitsi-based rooms
+
+----------------------------------------------------
+10. TECHNICAL CONSTRAINTS
+----------------------------------------------------
+
+- Backend: Node.js
+- Database: Graph DB (Neo4j) preferred
+- Video: Jitsi (free, browser-based)
+- Budget: Zero
+
+----------------------------------------------------
+11. PRODUCT VISION
+----------------------------------------------------
+
+SkillBarter aims to become a global learning exchange where
+time becomes the universal currency for education.
+
+====================================================
+SECTION B — FRONTEND DEVELOPMENT PROMPT
+====================================================
+
+ROLE:
+You are responsible for building the FRONTEND of SkillBarter.
+
+----------------------------------------------------
+STRICT CONSTRAINTS (DO NOT VIOLATE)
+----------------------------------------------------
+
+Allowed:
+- HTML (semantic HTML5)
+- CSS (plain CSS)
+- JavaScript (vanilla JS)
+
+NOT allowed:
+- No frameworks
+- No libraries
+- No UI kits
+- No packages
+
+----------------------------------------------------
+DESIGN REQUIREMENTS (VERY IMPORTANT)
+----------------------------------------------------
+
+- UI must NOT look simplistic
+- Must resemble a real production website
+- Clean, modern, professional
+- Dashboard-style layout
+- Judges must trust the product visually
+
+Design inspiration:
+Notion, Duolingo, Google Calendar
+
+----------------------------------------------------
+FRONTEND RESPONSIBILITIES
+----------------------------------------------------
+
+PAGES / VIEWS:
+- Login / Signup
+- Dashboard
+- Skills Management
+- Availability & Calendar
+- Matching Results
+- Session Page (Video)
+- Ratings / Feedback
+
+----------------------------------------------------
+DASHBOARD REQUIREMENTS
+----------------------------------------------------
+
+- Prominent Time Credit balance
+- Upcoming sessions
+- Quick action buttons
+
+----------------------------------------------------
+SKILLS UI
+----------------------------------------------------
+
+- Skills I Can Teach
+- Skills I Want to Learn
+- Skills displayed as tags or cards
+
+----------------------------------------------------
+AVAILABILITY & CALENDAR
+----------------------------------------------------
+
+- Weekly calendar grid
+- Slot selection
+- No external calendar libraries
+
+----------------------------------------------------
+MATCHING UI (CRITICAL)
+----------------------------------------------------
+
+Must visually explain exchange chains.
+
+Example:
+You → Bob → Carol → You
+
+Use mock data shaped exactly like backend responses.
+
+----------------------------------------------------
+SESSION & VIDEO
+----------------------------------------------------
+
+- Session confirmation page
+- Credit preview
+- Jitsi iframe integration
+
+----------------------------------------------------
+RATINGS
+----------------------------------------------------
+
+- Star rating (1–5)
+- Optional comment
+
+----------------------------------------------------
+UI QUALITY REQUIREMENTS
+----------------------------------------------------
+
+- CSS Grid / Flexbox
+- Consistent spacing
+- Clear typography hierarchy
+- Hover states
+- Responsive design
+
+----------------------------------------------------
+MOCK DATA RULE
+----------------------------------------------------
+
+All data must be mocked locally using the SAME JSON shape
+the backend will return.
+
+----------------------------------------------------
+FINAL GOAL
+----------------------------------------------------
+
+The frontend must be visually convincing, intuitive,
+and fully ready to connect to a Node.js backend
+without refactoring.
+
+====================================================
+END OF FILE
+====================================================

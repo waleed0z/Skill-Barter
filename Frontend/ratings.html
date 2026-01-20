@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillBarter - Ratings</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <div class="nav-brand">
+                <h1>SkillBarter</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="skills.html">Skills</a></li>
+                <li><a href="availability.html">Availability</a></li>
+                <li><a href="matching.html">Matching</a></li>
+                <li><a href="session.html">Sessions</a></li>
+                <li><a href="ratings.html" class="active">Ratings</a></li>
+                <li><a href="#" id="logout">Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <div class="ratings-container">
+                <h1>Rate Your Session</h1>
+
+                <div class="rating-form">
+                    <div class="session-summary">
+                        <h2>Session Summary</h2>
+                        <div id="session-summary">
+                            <!-- Session summary will be populated by JS -->
+                        </div>
+                    </div>
+
+                    <form id="rating-form">
+                        <div class="rating-section">
+                            <h3>Rate the Learning Experience</h3>
+                            <div class="star-rating">
+                                <input type="radio" id="star5" name="rating" value="5">
+                                <label for="star5" title="5 stars">★</label>
+                                <input type="radio" id="star4" name="rating" value="4">
+                                <label for="star4" title="4 stars">★</label>
+                                <input type="radio" id="star3" name="rating" value="3">
+                                <label for="star3" title="3 stars">★</label>
+                                <input type="radio" id="star2" name="rating" value="2">
+                                <label for="star2" title="2 stars">★</label>
+                                <input type="radio" id="star1" name="rating" value="1">
+                                <label for="star1" title="1 star">★</label>
+                            </div>
+                        </div>
+
+                        <div class="comment-section">
+                            <label for="rating-comment">Comments (Optional)</label>
+                            <textarea id="rating-comment" rows="4" placeholder="Share your feedback about the session..."></textarea>
+                        </div>
+
+                        <div class="rating-actions">
+                            <button type="submit" class="btn btn-primary">Submit Rating</button>
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Skip for Now</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="past-ratings">
+                    <h2>Your Past Ratings</h2>
+                    <div id="past-ratings">
+                        <!-- Past ratings will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="data.js"></script>
+    <script>
+        // Ratings page specific JS
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSessionSummary();
+            loadPastRatings();
+
+            document.getElementById('rating-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitRating();
+            });
+        });
+
+        function loadSessionSummary() {
+            const session = mockCurrentSession;
+            const summaryEl = document.getElementById('session-summary');
+
+            summaryEl.innerHTML = `
+                <div class="summary-card">
+                    <p><strong>Skill:</strong> ${session.skill}</p>
+                    <p><strong>With:</strong> ${session.partner}</p>
+                    <p><strong>Date:</strong> ${new Date(session.date).toLocaleDateString()}</p>
+                    <p><strong>Time:</strong> ${session.time}</p>
+                </div>
+            `;
+        }
+
+        function loadPastRatings() {
+            const ratingsContainer = document.getElementById('past-ratings');
+            ratingsContainer.innerHTML = '';
+
+            mockRatings.forEach(rating => {
+                const ratingEl = document.createElement('div');
+                ratingEl.className = 'rating-card';
+                ratingEl.innerHTML = `
+                    <div class="rating-header">
+                        <h4>${rating.skill} with ${rating.partner}</h4>
+                        <div class="rating-stars">
+                            ${'★'.repeat(rating.stars)}${'☆'.repeat(5 - rating.stars)}
+                        </div>
+                    </div>
+                    <p class="rating-comment">${rating.comment || 'No comment provided'}</p>
+                    <small class="rating-date">${new Date(rating.date).toLocaleDateString()}</small>
+                `;
+                ratingsContainer.appendChild(ratingEl);
+            });
+        }
+
+        function submitRating() {
+            const rating = document.querySelector('input[name="rating"]:checked');
+            const comment = document.getElementById('rating-comment').value;
+
+            if (!rating) {
+                alert('Please select a star rating.');
+                return;
+            }
+
+            // In production, this would send to backend
+            const newRating = {
+                skill: mockCurrentSession.skill,
+                partner: mockCurrentSession.partner,
+                stars: parseInt(rating.value),
+                comment: comment,
+                date: new Date().toISOString()
+            };
+
+            mockRatings.unshift(newRating);
+            alert('Rating submitted successfully!');
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>
