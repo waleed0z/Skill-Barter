@@ -1,63 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillBarter - Login</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>SkillBarter | Login & Signup</title>
+  <link rel="stylesheet" href="css/auth.css" />
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1 class="logo">SkillBarter</h1>
-            <p class="tagline">Exchange skills, earn time credits</p>
-        </header>
 
-        <main class="main-content">
-            <div class="auth-container">
-                <div class="auth-tabs">
-                    <button id="login-tab" class="tab active">Login</button>
-                    <button id="signup-tab" class="tab">Sign Up</button>
-                </div>
-
-                <form id="login-form" class="auth-form active">
-                    <h2>Welcome Back</h2>
-                    <div class="form-group">
-                        <label for="login-email">Email</label>
-                        <input type="email" id="login-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="login-password">Password</label>
-                        <input type="password" id="login-password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Login</button>
-                </form>
-
-                <form id="signup-form" class="auth-form">
-                    <h2>Join SkillBarter</h2>
-                    <div class="form-group">
-                        <label for="signup-name">Full Name</label>
-                        <input type="text" id="signup-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-email">Email</label>
-                        <input type="email" id="signup-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-password">Password</label>
-                        <input type="password" id="signup-password" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-confirm-password">Confirm Password</label>
-                        <input type="password" id="signup-confirm-password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Sign Up</button>
-                </form>
-            </div>
-        </main>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <img src="logo.png" alt="SkillBarter Logo" class="logo">
+      <span class="brand">SkillBarter</span>
     </div>
 
-    <script src="script.js"></script>
-    <script src="data.js"></script>
+    <ul class="nav-links">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Features</a></li>
+      <li><a href="#">Feedback</a></li>
+      <li><a href="#">Blog</a></li>
+      <li><a href="#">About Us</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="auth-container">
+
+    <!-- Left Section -->
+    <section class="auth-left">
+      <h1>Welcome to SkillBarter</h1>
+      <p>Trade Skills, Earn Time Credits, Learn for Free.</p>
+
+      <div class="auth-card">
+        <h2>Log In</h2>
+
+        <form id="loginForm">
+          <label>Email</label>
+          <input type="email" placeholder="Enter your email" required>
+
+          <label>Password</label>
+          <input type="password" placeholder="Enter your password" required>
+
+          <button type="submit" class="btn primary">Log In</button>
+          <a href="#" class="link">Forgot Password?</a>
+        </form>
+      </div>
+    </section>
+
+    <!-- Right Section -->
+    <section class="auth-right">
+      <div class="auth-card">
+        <h2>Sign Up</h2>
+
+        <form id="signupForm">
+          <label>Name</label>
+          <input type="text" placeholder="Your full name" required>
+
+          <label>Email</label>
+          <input type="email" placeholder="Your email" required>
+
+          <label>Password</label>
+          <input type="password" placeholder="Create a password" required>
+
+          <button type="submit" class="btn success">Sign Up</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="auth-footer">
+    <p>No cash. No subscriptions. Just skills.</p>
+  </footer>
+
+  <script src="auth.js"></script>
 </body>
 </html>

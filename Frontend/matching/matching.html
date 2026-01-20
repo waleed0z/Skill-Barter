@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Match Results | SkillBarter</title>
+  <link rel="stylesheet" href="matching.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <img src="../auth/logo.png" class="logo">
+      <span class="brand">SkillBarter</span>
+    </div>
+
+    <ul class="nav-links">
+      <li><a href="../dashboard/dashboard.html">Dashboard</a></li>
+      <li><a href="../skills/skills.html">Skills</a></li>
+      <li><a href="../availability/availability.html">Availability</a></li>
+      <li><a href="#" class="active">Matches</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <span class="user-name">Alice</span>
+      <button class="logout-btn">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main class="matching-page">
+
+    <h1>Match Results</h1>
+    <p class="subtitle">
+      We found the best learning path for you.
+    </p>
+
+    <!-- Direct Match -->
+    <section class="card">
+      <h3>Direct Match</h3>
+
+      <div class="match-row">
+        <div class="user-card">
+          <img src="https://i.pravatar.cc/100?img=3">
+          <h4>You</h4>
+          <p>Want to learn: Spanish</p>
+        </div>
+
+        <span class="arrow">→</span>
+
+        <div class="user-card">
+          <img src="https://i.pravatar.cc/100?img=5">
+          <h4>Bob</h4>
+          <p>Teaches: Spanish</p>
+          <span class="rating">⭐ 4.8</span>
+        </div>
+      </div>
+
+      <button class="btn primary">Book Session</button>
+    </section>
+
+    <!-- Chain Match -->
+    <section class="card chain">
+      <h3>3-Way Skill Exchange</h3>
+      <p class="hint">No direct match found. This chain completes your request.</p>
+
+      <div class="chain-visual">
+
+        <div class="user-card">
+          <img src="https://i.pravatar.cc/100?img=3">
+          <h4>You</h4>
+          <p>Teach: Python</p>
+          <p>Learn: Spanish</p>
+        </div>
+
+        <span class="arrow">→</span>
+
+        <div class="user-card">
+          <img src="https://i.pravatar.cc/100?img=7">
+          <h4>Bob</h4>
+          <p>Teach: Spanish</p>
+          <p>Learn: Design</p>
+          <span class="rating">⭐ 4.6</span>
+        </div>
+
+        <span class="arrow">→</span>
+
+        <div class="user-card">
+          <img src="https://i.pravatar.cc/100?img=9">
+          <h4>Clara</h4>
+          <p>Teach: Design</p>
+          <p>Learn: Python</p>
+          <span class="rating">⭐ 4.9</span>
+        </div>
+
+        <span class="arrow">→</span>
+
+        <div class="user-card highlight">
+          <img src="https://i.pravatar.cc/100?img=3">
+          <h4>You</h4>
+          <p>Learn: Spanish</p>
+        </div>
+
+      </div>
+
+      <button class="btn success">Accept Exchange Chain</button>
+    </section>
+
+  </main>
+
+  <script src="matching.js"></script>
+</body>
+</html>

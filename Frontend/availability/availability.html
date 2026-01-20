@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Availability | SkillBarter</title>
+  <link rel="stylesheet" href="availability.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <img src="../auth/logo.png" class="logo">
+      <span class="brand">SkillBarter</span>
+    </div>
+
+    <ul class="nav-links">
+      <li><a href="../dashboard/dashboard.html">Dashboard</a></li>
+      <li><a href="../skills/skills.html">Skills</a></li>
+      <li><a href="#" class="active">Availability</a></li>
+      <li><a href="#">Sessions</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <span class="user-name">Alice</span>
+      <button class="logout-btn">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main class="availability-page">
+
+    <h1>Set Your Availability</h1>
+    <p class="subtitle">
+      Select the time slots when you are available to teach or learn.
+    </p>
+
+    <div class="availability-layout">
+
+      <!-- Calendar -->
+      <section class="calendar card">
+        <div class="calendar-header">
+          <button id="prevMonth">‹</button>
+          <h3 id="monthLabel">January 2026</h3>
+          <button id="nextMonth">›</button>
+        </div>
+
+        <div class="calendar-grid">
+          <div class="day">Sun</div>
+          <div class="day">Mon</div>
+          <div class="day">Tue</div>
+          <div class="day">Wed</div>
+          <div class="day">Thu</div>
+          <div class="day">Fri</div>
+          <div class="day">Sat</div>
+
+          <!-- JS injects dates -->
+        </div>
+      </section>
+
+      <!-- Time Slots -->
+      <section class="slots card">
+        <h3>Available Time Slots</h3>
+        <p class="hint">Click to select or unselect time slots.</p>
+
+        <div class="slot-grid">
+          <button class="slot">09:00 – 10:00</button>
+          <button class="slot">10:00 – 11:00</button>
+          <button class="slot">11:00 – 12:00</button>
+          <button class="slot">13:00 – 14:00</button>
+          <button class="slot">14:00 – 15:00</button>
+          <button class="slot">15:00 – 16:00</button>
+        </div>
+
+        <button class="btn primary save-btn">Save Availability</button>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script src="availability.js"></script>
+</body>
+</html>

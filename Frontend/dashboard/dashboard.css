@@ -1,0 +1,149 @@
+@import url("../auth/auth.css");
+
+/* Navbar extras */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-name {
+  font-size: 14px;
+  color: #374151;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+}
+
+/* Dashboard */
+.dashboard {
+  padding: 40px 64px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.dashboard h1 {
+  font-size: 28px;
+  margin-bottom: 32px;
+}
+
+/* Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 32px;
+}
+
+/* Columns */
+.left-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Cards */
+.card {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+
+.card h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+/* Highlight Card */
+.highlight {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+}
+
+.highlight .credits {
+  font-size: 40px;
+  font-weight: bold;
+  margin: 12px 0;
+}
+
+.highlight .btn {
+  background: white;
+  color: #2563eb;
+}
+
+/* Skills */
+.skills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.skill {
+  background: #e5e7eb;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+}
+
+.skill.learn {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Session */
+.session-card img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+.session-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.session-title {
+  font-weight: 600;
+}
+
+.session-time {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Activity */
+.activity-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activity-list li {
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.activity-list span {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard {
+    padding: 24px;
+  }
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard | SkillBarter</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <img src="../auth/logo.png" class="logo">
+      <span class="brand">SkillBarter</span>
+    </div>
+
+    <ul class="nav-links">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Features</a></li>
+      <li><a href="#">Feedback</a></li>
+      <li><a href="#">Blog</a></li>
+      <li><a href="#">About Us</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <span class="user-name">Alice</span>
+      <button class="logout-btn">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Dashboard -->
+  <main class="dashboard">
+
+    <h1>Welcome, Alice!</h1>
+
+    <div class="dashboard-grid">
+
+      <!-- Left Column -->
+      <section class="left-column">
+
+        <!-- Time Credits -->
+        <div class="card highlight">
+          <h3>Time Credits</h3>
+          <p class="credits">3</p>
+          <button class="btn primary">Find a Match</button>
+        </div>
+
+        <!-- Skills -->
+        <div class="card">
+          <h3>Teach Skills</h3>
+          <div class="skills">
+            <span class="skill">Python</span>
+            <span class="skill">Photography</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Learn Skills</h3>
+          <div class="skills">
+            <span class="skill learn">Spanish</span>
+            <span class="skill learn">Design</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right Column -->
+      <section class="right-column">
+
+        <!-- Upcoming Session -->
+        <div class="card session-card">
+          <h3>Upcoming Session</h3>
+
+          <div class="session-info">
+            <img src="https://i.pravatar.cc/100" alt="Tutor">
+            <div>
+              <p class="session-title">Spanish with Bob</p>
+              <p class="session-time">Today, 4:00 PM</p>
+            </div>
+          </div>
+
+          <button class="btn success">Set Availability</button>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <h3>Recent Activity</h3>
+          <ul class="activity-list">
+            <li>⭐ Earned 1 Time Credit <span>5 min ago</span></li>
+            <li>📅 Booked Spanish with Bob <span>30 min ago</span></li>
+          </ul>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

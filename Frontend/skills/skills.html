@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Skills Management | SkillBarter</title>
+  <link rel="stylesheet" href="skills.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <img src="../auth/logo.png" class="logo">
+      <span class="brand">SkillBarter</span>
+    </div>
+
+    <ul class="nav-links">
+      <li><a href="../dashboard/dashboard.html">Dashboard</a></li>
+      <li><a href="#" class="active">Skills</a></li>
+      <li><a href="#">Sessions</a></li>
+      <li><a href="#">Profile</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <span class="user-name">Alice</span>
+      <button class="logout-btn">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="skills-page">
+
+    <h1>Skills Management</h1>
+    <p class="subtitle">Manage the skills you can teach and the ones you want to learn.</p>
+
+    <div class="skills-grid">
+
+      <!-- Teach Skills -->
+      <section class="card">
+        <h3>Skills I Can Teach</h3>
+
+        <div class="skills-list" id="teachSkills">
+          <span class="skill">Python</span>
+          <span class="skill">Photography</span>
+        </div>
+
+        <div class="add-skill">
+          <input type="text" id="teachInput" placeholder="Add a skill">
+          <button class="btn primary" id="addTeachSkill">Add</button>
+        </div>
+      </section>
+
+      <!-- Learn Skills -->
+      <section class="card">
+        <h3>Skills I Want to Learn</h3>
+
+        <div class="skills-list" id="learnSkills">
+          <span class="skill learn">Spanish</span>
+          <span class="skill learn">Design</span>
+        </div>
+
+        <div class="add-skill">
+          <input type="text" id="learnInput" placeholder="Add a skill">
+          <button class="btn success" id="addLearnSkill">Add</button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script src="skills.js"></script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+@import url("../auth/auth.css");
+
+/* Active nav */
+.nav-links .active {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Page */
+.matching-page {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 64px;
+}
+
+.matching-page h1 {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-bottom: 32px;
+}
+
+/* Cards */
+.card {
+  background: white;
+  padding: 28px;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  margin-bottom: 32px;
+}
+
+.card h3 {
+  margin-bottom: 12px;
+}
+
+/* Match row */
+.match-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+/* Chain */
+.chain-visual {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+/* User cards */
+.user-card {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  width: 160px;
+}
+
+.user-card img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.user-card h4 {
+  margin-bottom: 4px;
+}
+
+.user-card p {
+  font-size: 13px;
+  color: #374151;
+}
+
+.user-card.highlight {
+  border: 2px solid #2563eb;
+}
+
+.rating {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #f59e0b;
+}
+
+/* Arrows */
+.arrow {
+  font-size: 22px;
+  color: #6b7280;
+}
+
+/* Hint */
+.hint {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .matching-page {
+    padding: 24px;
+  }
+
+  .chain-visual {
+    flex-direction: column;
+  }
+
+  .arrow {
+    transform: rotate(90deg);
+  }
+}
