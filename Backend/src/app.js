@@ -7,6 +7,7 @@ const YAML = require('yamljs');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth.routes');
+const skillRoutes = require('./routes/skill.routes');
 const swaggerDocument = YAML.load('./src/docs/swagger.yaml');
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(morgan('dev'));
 // Routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/auth', authRoutes);
+app.use('/skills', skillRoutes);
 
 app.get('/', (req, res) => {
     res.send('SkillBarter Backend is running');

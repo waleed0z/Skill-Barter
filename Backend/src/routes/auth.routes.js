@@ -9,7 +9,7 @@ const {
     verifyEmailSchema,
     forgotPasswordSchema,
     resetPasswordSchema
-} = require('../utils/validation');
+} = require('../utils/auth.validation');
 
 router.post('/signup', validate(signupSchema), authController.signup);
 router.post('/verify-email', validate(verifyEmailSchema), authController.verifyEmail);

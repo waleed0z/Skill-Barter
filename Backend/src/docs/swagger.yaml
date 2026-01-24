@@ -51,6 +51,7 @@ paths:
                 - name
                 - email
                 - password
+                - confirmPassword
               properties:
                 name:
                   type: string
@@ -58,6 +59,9 @@ paths:
                   type: string
                   format: email
                 password:
+                  type: string
+                  format: password
+                confirmPassword:
                   type: string
                   format: password
       responses:
@@ -179,12 +183,16 @@ paths:
               required:
                 - email
                 - newPassword
+                - confirmPassword
                 - token
               properties:
                 email:
                   type: string
                   format: email
                 newPassword:
+                  type: string
+                  format: password
+                confirmPassword:
                   type: string
                   format: password
                 token:
@@ -212,3 +220,102 @@ paths:
           description: Unauthorized
         404:
           description: User not found
+
+  /skills/search:
+    get:
+      summary: Search for skills (Autocomplete)
+      tags: [Skills]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search query
+      responses:
+        200:
+          description: List of matching skills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /skills:
+    post:
+      summary: Add a skill to teach or learn
+      tags: [Skills]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+              properties:
+                name:
+                  type: string
+                  example: Python
+                type:
+                  type: string
+                  enum: [TEACH, LEARN]
+      responses:
+        201:
+          description: Skill added
+        500:
+          description: Server error
+
+  /skills/{name}:
+    delete:
+      summary: Remove a skill
+      tags: [Skills]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: Name of the skill to remove
+        - in: query
+          name: type
+          required: true
+          schema:
+            type: string
+            enum: [TEACH, LEARN]
+          description: Type of skill list to remove from
+      responses:
+        200:
+          description: Skill removed
+        400:
+          description: Invalid type
+
+  /skills/user:
+    get:
+      summary: Get current user's skills
+      tags: [Skills]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: User's skills
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teach:
+                    type: array
+                    items:
+                      type: string
+                  learn:
+                    type: array
+                    items:
+                      type: string
