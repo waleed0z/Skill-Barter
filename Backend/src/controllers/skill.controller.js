@@ -69,7 +69,8 @@ const removeSkill = async (req, res) => {
 
         await session.run(
             `
-            MATCH (u:User {id: $userId})-[r:${relationType}]->(s:Skill {name: $name})
+            MATCH (u:User {id: $userId})-[r:${relationType}]->(s:Skill)
+            WHERE toLower(s.name) = toLower($name)
             DELETE r
             `,
             { userId, name }

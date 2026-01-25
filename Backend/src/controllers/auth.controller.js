@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { sendEmail } = require('../services/email.service');
+const { generateAndSendOtp } = require('../services/otp.service');
 require('dotenv').config();
 
 const signup = async (req, res) => {
@@ -14,12 +15,27 @@ const signup = async (req, res) => {
 
         const existingUser = await User.findUserByEmail(email);
         if (existingUser) {
-            return res.status(409).json({ message: 'User already exists' });
+            if (existingUser.isVerified) {
+                return res.status(409).json({ message: 'User already exists' });
+            } else {
+                // Resend OTP logic
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+                await User.updateOtp(email, otp, otpExpires);
+                await sendEmail(email, 'Verify your email', `Your OTP is ${otp}`, `<p>Your OTP is <b>${otp}</b></p>`);
+
+                return res.status(200).json({
+                    message: 'User already exists but is not verified. Verification email resent.',
+                    userId: existingUser.id
+                });
+            }
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
+        // Create user first with the OTP
         const newUser = await User.createUser({ name, email, password, otp, otpExpires });
 
         await sendEmail(email, 'Verify your email', `Your OTP is ${otp}`, `<p>Your OTP is <b>${otp}</b></p>`);
@@ -66,7 +82,8 @@ const login = async (req, res) => {
         }
 
         if (!user.isVerified) {
-            return res.status(403).json({ message: 'Please verify your email first' });
+            await generateAndSendOtp(user.email);
+            return res.status(403).json({ message: 'Account not verified. A new verification code has been sent to your email.' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);

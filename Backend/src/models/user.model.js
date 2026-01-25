@@ -22,7 +22,7 @@ const createUser = async (userData) => {
                 email: userData.email,
                 password: hashedPassword,
                 otp: userData.otp,
-                otpExpires: userData.otpExpires.toISOString()
+                otpExpires: userData.otpExpires.toISOString() // Store as ISO string
             }
         );
         return result.records[0].get('u').properties;
@@ -62,11 +62,12 @@ const verifyUser = async (email) => {
 const setPasswordResetToken = async (email, token, expires) => {
     const session = driver.session();
     try {
+        const expiresStr = expires.toISOString();
         await session.run(
             `MATCH (u:User {email: $email})
              SET u.resetPasswordToken = $token, u.resetPasswordExpires = $expires
              RETURN u`,
-            { email, token, expires: expires.toISOString() }
+            { email, token, expires: expiresStr }
         );
     } finally {
         await session.close();
@@ -88,4 +89,18 @@ const updatePassword = async (email, newPassword) => {
     }
 };
 
-module.exports = { createUser, findUserByEmail, verifyUser, setPasswordResetToken, updatePassword };
+const updateOtp = async (email, otp, otpExpires) => {
+    const session = driver.session();
+    try {
+        await session.run(
+            `MATCH (u:User {email: $email})
+             SET u.otp = $otp, u.otpExpires = $otpExpires
+             RETURN u`,
+            { email, otp, otpExpires: otpExpires.toISOString() }
+        );
+    } finally {
+        await session.close();
+    }
+};
+
+module.exports = { createUser, findUserByEmail, verifyUser, setPasswordResetToken, updatePassword, updateOtp };
