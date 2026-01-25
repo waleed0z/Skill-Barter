@@ -319,3 +319,51 @@ paths:
                     type: array
                     items:
                       type: string
+
+  /credits/balance:
+    get:
+      summary: Get user's time credit balance
+      tags: [Credits]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Current balance
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: integer
+                    example: 5
+        404:
+          description: User not found
+
+  /credits/history:
+    get:
+      summary: Get transaction history
+      tags: [Credits]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    amount:
+                      type: integer
+                    date:
+                      type: string
+                    type:
+                      type: string
+                      enum: [SENT, RECEIVED]
+                    otherParty:
+                      type: string
