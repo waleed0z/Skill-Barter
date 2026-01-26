@@ -1,0 +1,260 @@
+{
+  "currentUser": {
+    "id": "user_alice",
+    "name": "Alice",
+    "email": "alice@example.com",
+    "avatar": "https://api.example.com/avatars/alice.jpg",
+    "timeCredits": 3.5,
+    "bio": "Passionate about learning languages and teaching programming",
+    "joinDate": "2025-06-15"
+  },
+  "auth": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "refresh_token_123456"
+  },
+  "dashboard": {
+    "stats": {
+      "completedSessions": 12,
+      "upcomingSessions": 2,
+      "skillsTeaching": 3,
+      "skillsLearning": 2,
+      "avgRating": 4.7
+    },
+    "upcomingSessions": [
+      {
+        "id": "sess_001",
+        "skill": "Spanish",
+        "partner": "Bob",
+        "partnerAvatar": "https://api.example.com/avatars/bob.jpg",
+        "type": "learning",
+        "dateTime": "2026-01-22T15:00:00Z",
+        "duration": 60,
+        "status": "confirmed"
+      },
+      {
+        "id": "sess_002",
+        "skill": "Python Programming",
+        "partner": "Carol",
+        "partnerAvatar": "https://api.example.com/avatars/carol.jpg",
+        "type": "teaching",
+        "dateTime": "2026-01-23T10:00:00Z",
+        "duration": 45,
+        "status": "confirmed"
+      }
+    ],
+    "recentActivity": [
+      {
+        "id": "act_001",
+        "type": "session_completed",
+        "skill": "French",
+        "partner": "David",
+        "date": "2026-01-20T14:30:00Z",
+        "rating": 5
+      },
+      {
+        "id": "act_002",
+        "type": "skill_added",
+        "skill": "JavaScript",
+        "date": "2026-01-19T09:00:00Z"
+      }
+    ]
+  },
+  "skills": {
+    "teaching": [
+      {
+        "id": "skill_python",
+        "name": "Python Programming",
+        "category": "Technology",
+        "level": "Intermediate",
+        "description": "Learn Python basics and intermediate concepts",
+        "tags": ["programming", "python", "backend"],
+        "yearsOfExperience": 5,
+        "hourlyRate": 1.0,
+        "availability": "weekends"
+      },
+      {
+        "id": "skill_javascript",
+        "name": "JavaScript",
+        "category": "Technology",
+        "level": "Beginner",
+        "description": "Learn JavaScript fundamentals",
+        "tags": ["programming", "javascript", "web"],
+        "yearsOfExperience": 3,
+        "hourlyRate": 0.8,
+        "availability": "evenings"
+      },
+      {
+        "id": "skill_english",
+        "name": "English Conversation",
+        "category": "Language",
+        "level": "Advanced",
+        "description": "Practice conversational English",
+        "tags": ["language", "english", "conversation"],
+        "yearsOfExperience": 7,
+        "hourlyRate": 1.2,
+        "availability": "flexible"
+      }
+    ],
+    "learning": [
+      {
+        "id": "skill_spanish",
+        "name": "Spanish",
+        "category": "Language",
+        "targetLevel": "Intermediate",
+        "description": "Want to improve conversational Spanish",
+        "tags": ["language", "spanish", "travel"],
+        "currentLevel": "Beginner",
+        "priorityLevel": "high"
+      },
+      {
+        "id": "skill_japanese",
+        "name": "Japanese",
+        "category": "Language",
+        "targetLevel": "Beginner",
+        "description": "Learning Japanese for travel",
+        "tags": ["language", "japanese", "travel"],
+        "currentLevel": "Beginner",
+        "priorityLevel": "medium"
+      }
+    ]
+  },
+  "availability": {
+    "timezone": "EST",
+    "weeklySchedule": [
+      {
+        "day": "Monday",
+        "slots": [
+          {"startTime": "18:00", "endTime": "20:00", "available": true},
+          {"startTime": "20:00", "endTime": "22:00", "available": false}
+        ]
+      },
+      {
+        "day": "Tuesday",
+        "slots": [
+          {"startTime": "18:00", "endTime": "20:00", "available": true},
+          {"startTime": "20:00", "endTime": "22:00", "available": true}
+        ]
+      },
+      {
+        "day": "Wednesday",
+        "slots": [
+          {"startTime": "18:00", "endTime": "20:00", "available": true},
+          {"startTime": "20:00", "endTime": "22:00", "available": true}
+        ]
+      },
+      {
+        "day": "Thursday",
+        "slots": [
+          {"startTime": "18:00", "endTime": "20:00", "available": false},
+          {"startTime": "20:00", "endTime": "22:00", "available": true}
+        ]
+      },
+      {
+        "day": "Friday",
+        "slots": [
+          {"startTime": "18:00", "endTime": "20:00", "available": true},
+          {"startTime": "20:00", "endTime": "22:00", "available": true}
+        ]
+      },
+      {
+        "day": "Saturday",
+        "slots": [
+          {"startTime": "10:00", "endTime": "12:00", "available": true},
+          {"startTime": "14:00", "endTime": "16:00", "available": true}
+        ]
+      },
+      {
+        "day": "Sunday",
+        "slots": [
+          {"startTime": "10:00", "endTime": "12:00", "available": true},
+          {"startTime": "14:00", "endTime": "16:00", "available": false}
+        ]
+      }
+    ]
+  },
+  "matches": [
+    {
+      "id": "match_001",
+      "type": "potential",
+      "user": {
+        "id": "user_bob",
+        "name": "Bob",
+        "avatar": "https://api.example.com/avatars/bob.jpg",
+        "rating": 4.8,
+        "bio": "Native Spanish speaker, teaching Spanish for 10 years"
+      },
+      "skill": "Spanish",
+      "skillDirection": "teaching",
+      "matchScore": 95,
+      "commonAvailability": ["Tuesday 18:00-20:00", "Wednesday 18:00-20:00"],
+      "reason": "Bob teaches Spanish and you want to learn. High compatibility!"
+    },
+    {
+      "id": "match_002",
+      "type": "potential",
+      "user": {
+        "id": "user_carol",
+        "name": "Carol",
+        "avatar": "https://api.example.com/avatars/carol.jpg",
+        "rating": 4.5,
+        "bio": "Software developer, loves teaching Python"
+      },
+      "skill": "Python Programming",
+      "skillDirection": "learning",
+      "matchScore": 88,
+      "commonAvailability": ["Monday 18:00-20:00", "Friday 20:00-22:00"],
+      "reason": "Carol is learning Python and you teach it. Great exchange!"
+    },
+    {
+      "id": "match_003",
+      "type": "potential",
+      "user": {
+        "id": "user_david",
+        "name": "David",
+        "avatar": "https://api.example.com/avatars/david.jpg",
+        "rating": 4.6,
+        "bio": "Japanese teacher and anime enthusiast"
+      },
+      "skill": "Japanese",
+      "skillDirection": "teaching",
+      "matchScore": 82,
+      "commonAvailability": ["Saturday 10:00-12:00"],
+      "reason": "David teaches Japanese, your target skill. Good match!"
+    }
+  ],
+  "session": {
+    "id": "sess_12345",
+    "status": "active",
+    "startTime": "2026-01-22T14:00:00Z",
+    "endTime": "2026-01-22T15:00:00Z",
+    "skill": {
+      "id": "skill_spanish",
+      "name": "Spanish",
+      "category": "Language"
+    },
+    "teacher": {
+      "id": "user_bob",
+      "name": "Bob",
+      "avatar": "https://api.example.com/avatars/bob.jpg",
+      "rating": 4.8
+    },
+    "learner": {
+      "id": "user_alice",
+      "name": "Alice",
+      "avatar": "https://api.example.com/avatars/alice.jpg"
+    },
+    "duration": 60,
+    "creditsRequired": 1,
+    "jitsiRoom": "skillbarter_sess_12345",
+    "description": "Learn conversational Spanish basics"
+  },
+  "rating": {
+    "sessionId": "sess_12345",
+    "skill": "Spanish",
+    "partner": "Bob",
+    "stars": null,
+    "review": null,
+    "submitted": false,
+    "sessionDuration": 60
+  }
+}

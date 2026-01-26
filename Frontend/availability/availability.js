@@ -1,8 +1,32 @@
+const dummyLoaderScript = document.createElement('script');
+dummyLoaderScript.src = '../js/dummy-loader.js';
+document.head.appendChild(dummyLoaderScript);
+
 const calendarGrid = document.querySelector(".calendar-grid");
 const monthLabel = document.getElementById("monthLabel");
+const slotGrid = document.querySelector(".slot-grid");
 
 let currentDate = new Date(2026, 0, 1);
 let selectedDate = null;
+let selectedSlots = [];
+
+async function initAvailability() {
+  await loadDummyData();
+  
+  if (!dummyData) {
+    console.error('Failed to load dummy data');
+    return;
+  }
+
+  // Populate navbar
+  document.querySelector('.user-name').textContent = dummyData.currentUser.name;
+
+  // Render initial calendar
+  renderCalendar();
+  
+  // Populate slots from dummy data
+  populateSlots();
+}
 
 function renderCalendar() {
   calendarGrid.querySelectorAll(".date").forEach(d => d.remove());
@@ -31,13 +55,37 @@ function renderCalendar() {
       document.querySelectorAll(".date").forEach(d => d.classList.remove("selected"));
       dateEl.classList.add("selected");
       selectedDate = new Date(year, month, day);
+      populateSlots();
     };
 
     calendarGrid.appendChild(dateEl);
   }
 }
 
-renderCalendar();
+function populateSlots() {
+  if (!dummyData) return;
+  
+  const dayOfWeek = selectedDate ? selectedDate.toLocaleDateString('en-US', { weekday: 'long' }) : 'Monday';
+  const daySchedule = dummyData.availability.weeklySchedule.find(d => d.day === dayOfWeek);
+  
+  if (daySchedule) {
+    slotGrid.innerHTML = daySchedule.slots
+      .map(slot => `
+        <button class="slot" data-time="${slot.startTime}-${slot.endTime}" 
+          ${slot.available ? '' : 'disabled'}>
+          ${slot.startTime} – ${slot.endTime}
+        </button>
+      `)
+      .join('');
+    
+    // Add slot selection listeners
+    document.querySelectorAll('.slot').forEach(slot => {
+      slot.addEventListener('click', (e) => {
+        e.target.classList.toggle('selected');
+      });
+    });
+  }
+}
 
 document.getElementById("prevMonth").onclick = () => {
   currentDate.setMonth(currentDate.getMonth() - 1);
@@ -48,6 +96,12 @@ document.getElementById("nextMonth").onclick = () => {
   currentDate.setMonth(currentDate.getMonth() + 1);
   renderCalendar();
 };
+
+document.querySelector('.save-btn').addEventListener('click', () => {
+  alert('Availability saved! (Backend integration coming next)');
+});
+
+window.addEventListener('load', initAvailability);
 
 document.querySelectorAll(".slot").forEach(slot => {
   slot.onclick = () => slot.classList.toggle("selected");

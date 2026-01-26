@@ -40,9 +40,8 @@
 
       <!-- Video Area -->
       <section class="video-area card">
-        <div class="video-placeholder">
-          <p>Live Video Session</p>
-          <span>Jitsi will be embedded here</span>
+        <div id="jitsi-container" style="width: 100%; height: 500px; background: #000; border-radius: 8px;">
+          <!-- Jitsi embed will load here -->
         </div>
 
         <div class="video-controls">
@@ -91,6 +90,10 @@
     </div>
   </div>
 
+  <!-- Jitsi Meet Script -->
+  <script src='https://meet.jit.si/external_api.js'></script>
+
+  <script src="../js/dummy-loader.js"></script>
   <script src="session.js"></script>
 </body>
 </html>
