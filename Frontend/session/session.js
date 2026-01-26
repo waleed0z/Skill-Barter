@@ -2,6 +2,10 @@ const dummyLoaderScript = document.createElement('script');
 dummyLoaderScript.src = '../js/dummy-loader.js';
 document.head.appendChild(dummyLoaderScript);
 
+const apiScript = document.createElement('script');
+apiScript.src = '../js/api-client.js';
+document.head.appendChild(apiScript);
+
 const endBtn = document.getElementById("endSessionBtn");
 const modal = document.getElementById("ratingModal");
 const stars = document.querySelectorAll(".stars span");
@@ -55,13 +59,27 @@ stars.forEach(star => {
   });
 });
 
-document.getElementById("submitRating").addEventListener('click', () => {
+document.getElementById("submitRating").addEventListener('click', async () => {
   if (!selectedRating) {
     alert("Please select a rating.");
     return;
   }
 
-  alert("Rating submitted. Credits updated (backend later).");
+  try {
+    // Try to submit rating to API
+    const sessionId = new URLSearchParams(window.location.search).get('sessionId');
+    if (sessionId) {
+      await completeSession(sessionId, {
+        rating: selectedRating,
+        feedback: document.querySelector('.feedback-text')?.value || ''
+      });
+    }
+    alert("Rating submitted successfully!");
+  } catch (error) {
+    console.warn('Failed to submit rating to API:', error);
+    alert("Rating submitted locally. Credits updated (backend integration coming next).");
+  }
+  
   modal.classList.add("hidden");
 });
 

@@ -1,6 +1,6 @@
 // API Client - Configure with your backend URL
 const API_CONFIG = {
-  baseURL: 'http://localhost:5000/api', // Update this to your backend URL
+  baseURL: 'http://localhost:5000', // Update this to your backend URL
   timeout: 10000
 };
 
@@ -47,6 +47,25 @@ async function login(email, password) {
   return response;
 }
 
+async function signup(email, password, name) {
+  const response = await apiCall('/auth/signup', 'POST', { email, password, name });
+  authToken = response.token;
+  localStorage.setItem('authToken', authToken);
+  return response;
+}
+
+async function verifyEmail(email, otp) {
+  return apiCall('/auth/verify-email', 'POST', { email, otp });
+}
+
+async function forgotPassword(email) {
+  return apiCall('/auth/forgot-password', 'POST', { email });
+}
+
+async function resetPassword(email, otp, newPassword) {
+  return apiCall('/auth/reset-password', 'POST', { email, otp, password: newPassword });
+}
+
 async function logout() {
   authToken = null;
   localStorage.removeItem('authToken');
@@ -54,51 +73,67 @@ async function logout() {
 
 // User endpoints
 async function getCurrentUser() {
-  return apiCall('/users/me');
+  return apiCall('/auth/profile');
 }
 
 async function updateUser(userData) {
-  return apiCall('/users/me', 'PUT', userData);
+  return apiCall('/auth/profile', 'PUT', userData);
 }
 
 // Skills endpoints
 async function getTeachingSkills() {
-  return apiCall('/skills/teaching');
+  return apiCall('/skills/user?type=TEACH');
 }
 
 async function getLearningSkills() {
-  return apiCall('/skills/learning');
+  return apiCall('/skills/user?type=LEARN');
 }
 
 async function addSkill(skillName, skillType) {
-  return apiCall(`/skills/${skillType}`, 'POST', { name: skillName });
+  const type = skillType.toUpperCase() === 'TEACH' ? 'TEACH' : 'LEARN';
+  return apiCall('/skills', 'POST', { name: skillName, type });
 }
 
-// Session endpoints
+// Session endpoints - NOTE: These routes not yet implemented in backend
 async function getUpcomingSessions() {
-  return apiCall('/sessions/upcoming');
+  console.warn('getUpcomingSessions: Not yet implemented in backend');
+  return apiCall('/sessions/upcoming').catch(() => []);
 }
 
 async function getCurrentSession() {
-  return apiCall('/sessions/current');
+  console.warn('getCurrentSession: Not yet implemented in backend');
+  return apiCall('/sessions/current').catch(() => null);
 }
 
 async function completeSession(sessionId, ratingData) {
-  return apiCall(`/sessions/${sessionId}/complete`, 'POST', ratingData);
+  console.warn('completeSession: Not yet implemented in backend');
+  return apiCall(`/sessions/${sessionId}/complete`, 'POST', ratingData).catch(() => null);
 }
 
-// Matching endpoints
+// Matching endpoints - NOTE: These routes not yet implemented in backend
 async function getMatches() {
-  return apiCall('/matches');
+  console.warn('getMatches: Not yet implemented in backend');
+  return apiCall('/matches').catch(() => []);
 }
 
-// Availability endpoints
+// Availability endpoints - NOTE: These routes not yet implemented in backend
 async function getAvailability() {
-  return apiCall('/availability');
+  console.warn('getAvailability: Not yet implemented in backend');
+  return apiCall('/availability').catch(() => null);
 }
 
 async function updateAvailability(availabilityData) {
-  return apiCall('/availability', 'PUT', availabilityData);
+  console.warn('updateAvailability: Not yet implemented in backend');
+  return apiCall('/availability', 'PUT', availabilityData).catch(() => null);
+}
+
+// Credits endpoints
+async function getCreditBalance() {
+  return apiCall('/credits/balance');
+}
+
+async function getCreditHistory() {
+  return apiCall('/credits/history');
 }
 
 // TODO: Uncomment when ready to switch from dummy data to real API

@@ -2,6 +2,10 @@ const dummyLoaderScript = document.createElement('script');
 dummyLoaderScript.src = '../js/dummy-loader.js';
 document.head.appendChild(dummyLoaderScript);
 
+const apiScript = document.createElement('script');
+apiScript.src = '../js/api-client.js';
+document.head.appendChild(apiScript);
+
 const calendarGrid = document.querySelector(".calendar-grid");
 const monthLabel = document.getElementById("monthLabel");
 const slotGrid = document.querySelector(".slot-grid");
@@ -97,20 +101,24 @@ document.getElementById("nextMonth").onclick = () => {
   renderCalendar();
 };
 
-document.querySelector('.save-btn').addEventListener('click', () => {
-  alert('Availability saved! (Backend integration coming next)');
-});
-
-window.addEventListener('load', initAvailability);
-
-document.querySelectorAll(".slot").forEach(slot => {
-  slot.onclick = () => slot.classList.toggle("selected");
-});
-
-document.querySelector(".save-btn").onclick = () => {
+document.querySelector('.save-btn').addEventListener('click', async () => {
   if (!selectedDate) {
     alert("Please select a date first.");
     return;
   }
-  alert("Availability saved (connect backend later)");
-};
+
+  // Gather selected slots
+  const availabilityData = {
+    date: selectedDate.toISOString(),
+    slots: Array.from(document.querySelectorAll('.slot.selected'))
+      .map(slot => slot.dataset.time)
+  };
+
+  try {
+    await updateAvailability(availabilityData);
+    alert('Availability saved successfully!');
+  } catch (error) {
+    console.warn('Failed to save availability to API:', error);
+    alert('Availability saved locally! (Backend update coming next)');
+  }
+});

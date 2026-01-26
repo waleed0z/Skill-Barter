@@ -2,6 +2,10 @@ const dummyLoaderScript = document.createElement('script');
 dummyLoaderScript.src = '../js/dummy-loader.js';
 document.head.appendChild(dummyLoaderScript);
 
+const apiScript = document.createElement('script');
+apiScript.src = '../js/api-client.js';
+document.head.appendChild(apiScript);
+
 async function initSkills() {
   await loadDummyData();
   
@@ -13,39 +17,69 @@ async function initSkills() {
   // Populate navbar
   document.querySelector('.user-name').textContent = dummyData.currentUser.name;
 
-  // Populate teach skills
-  const teachSkillsList = document.getElementById('teachSkills');
-  teachSkillsList.innerHTML = dummyData.skills.teaching
-    .map(skill => `<span class="skill" title="${skill.description}">${skill.name}</span>`)
-    .join('');
+  // Try to load skills from API, fallback to dummy data
+  try {
+    const teachingSkills = await getTeachingSkills();
+    const learningSkills = await getLearningSkills();
+    
+    const teachSkillsList = document.getElementById('teachSkills');
+    teachSkillsList.innerHTML = (teachingSkills.data || [])
+      .map(skill => `<span class="skill" title="${skill.description || ''}">${skill.name}</span>`)
+      .join('');
 
-  // Populate learn skills
-  const learnSkillsList = document.getElementById('learnSkills');
-  learnSkillsList.innerHTML = dummyData.skills.learning
-    .map(skill => `<span class="skill learn" title="${skill.description}">${skill.name}</span>`)
-    .join('');
+    const learnSkillsList = document.getElementById('learnSkills');
+    learnSkillsList.innerHTML = (learningSkills.data || [])
+      .map(skill => `<span class="skill learn" title="${skill.description || ''}">${skill.name}</span>`)
+      .join('');
+  } catch (error) {
+    console.warn('Failed to load skills from API, using dummy data:', error);
+    
+    // Fallback to dummy data
+    const teachSkillsList = document.getElementById('teachSkills');
+    teachSkillsList.innerHTML = dummyData.skills.teaching
+      .map(skill => `<span class="skill" title="${skill.description}">${skill.name}</span>`)
+      .join('');
+
+    const learnSkillsList = document.getElementById('learnSkills');
+    learnSkillsList.innerHTML = dummyData.skills.learning
+      .map(skill => `<span class="skill learn" title="${skill.description}">${skill.name}</span>`)
+      .join('');
+  }
 }
 
-function addSkill(inputId, listId, className = "") {
+function addSkillToUI(inputId, listId, className = "") {
   const input = document.getElementById(inputId);
   const list = document.getElementById(listId);
 
   if (!input.value.trim()) return;
 
+  const skillName = input.value.trim();
+  const skillType = inputId === "teachInput" ? "TEACH" : "LEARN";
+
+  // Add to UI immediately (optimistic update)
   const skill = document.createElement("span");
   skill.className = `skill ${className}`;
-  skill.textContent = input.value.trim();
-
+  skill.textContent = skillName;
   list.appendChild(skill);
   input.value = "";
+
+  // Send to API
+  addSkill(skillName, skillType)
+    .then(() => console.log(`Skill "${skillName}" added successfully`))
+    .catch(error => {
+      console.error(`Failed to add skill "${skillName}":`, error);
+      // Remove from UI if API call fails
+      skill.remove();
+      alert(`Failed to add skill: ${error.message}`);
+    });
 }
 
 document.getElementById("addTeachSkill").addEventListener("click", () => {
-  addSkill("teachInput", "teachSkills");
+  addSkillToUI("teachInput", "teachSkills");
 });
 
 document.getElementById("addLearnSkill").addEventListener("click", () => {
-  addSkill("learnInput", "learnSkills", "learn");
+  addSkillToUI("learnInput", "learnSkills", "learn");
 });
 
 document.querySelector(".logout-btn").addEventListener("click", () => {
