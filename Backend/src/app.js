@@ -30,20 +30,9 @@ app.use('/skills', skillRoutes);
 app.use('/credits', creditRoutes);
 
 // Catch-all handler: serve frontend for non-API routes
-app.get('*', (req, res) => {
-    // If it's an API route, let it fall through to return a 404 or be handled by routes
-    if (
-        req.path.startsWith('/auth') ||
-        req.path.startsWith('/skills') ||
-        req.path.startsWith('/credits') ||
-        req.path.startsWith('/api-docs')
-    ) {
-        // Return a 404 for unmatched API routes
-        res.status(404).json({ error: 'API endpoint not found' });
-    } else {
-        // Serve the frontend for all other routes
-        res.sendFile(path.join(__dirname, '../../Frontend/index.html'));
-    }
+app.get(/^(?!\/auth|\/skills|\/credits|\/api-docs).*$/, (req, res) => {
+    // Serve the frontend for all routes that don't match API routes
+    res.sendFile(path.join(__dirname, '../../Frontend/index.html'));
 });
 
 module.exports = app;
