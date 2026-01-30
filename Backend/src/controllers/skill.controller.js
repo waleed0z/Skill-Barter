@@ -1,32 +1,23 @@
-const { driver } = require('../config/db');
+const { getDb } = require('../config/db');
 
 const searchSkills = async (req, res) => {
     const { q } = req.query;
     if (!q) return res.json([]);
 
-    const session = driver.session();
+    const db = getDb();
     try {
-        const result = await session.run(
-            `MATCH (s:Skill)
-             WHERE toLower(s.name) CONTAINS toLower($q)
-             RETURN s.name AS name
-             LIMIT 10`,
-            { q }
-        );
-        const skills = result.records.map(record => record.get('name'));
-        res.json(skills);
+        const rows = await db.all(`SELECT name FROM skills WHERE LOWER(name) LIKE '%' || LOWER(?) || '%' LIMIT 10`, q);
+        res.json(rows.map(r => r.name));
     } catch (error) {
         console.error('Search skills error:', error);
         res.status(500).json({ message: 'Server error' });
-    } finally {
-        await session.close();
     }
 };
 
 const addSkill = async (req, res) => {
     const { name, type } = req.body;
     const userId = req.user.id;
-    const session = driver.session();
+    const db = getDb();
 
     // Normalize skill name: capitalize first letter of each word
     const normalizedName = name.trim().replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
@@ -34,23 +25,17 @@ const addSkill = async (req, res) => {
     try {
         const relationType = type === 'TEACH' ? 'TEACHES' : 'WANTS_TO_LEARN';
 
-        // Merge Plugin pattern: Ensure Skill exists, then create relationship
-        await session.run(
-            `
-            MATCH (u:User {id: $userId})
-            MERGE (s:Skill {name: $name})
-            MERGE (u)-[:${relationType}]->(s)
-            RETURN s
-            `,
-            { userId, name: normalizedName }
-        );
+        // Ensure skill exists
+        await db.run(`INSERT OR IGNORE INTO skills (name) VALUES (?)`, normalizedName);
+        const skill = await db.get(`SELECT id FROM skills WHERE name = ?`, normalizedName);
+
+        // Create relationship in join table
+        await db.run(`INSERT OR IGNORE INTO user_skills (user_id, skill_id, relation_type) VALUES (?, ?, ?)`, userId, skill.id, relationType);
 
         res.status(201).json({ message: `Skill '${normalizedName}' added to ${type} list` });
     } catch (error) {
         console.error('Add skill error:', error);
         res.status(500).json({ message: 'Server error' });
-    } finally {
-        await session.close();
     }
 };
 
@@ -58,57 +43,40 @@ const removeSkill = async (req, res) => {
     const { name } = req.params;
     const { type } = req.query;
     const userId = req.user.id;
+    const db = getDb();
 
     if (!type || !['TEACH', 'LEARN'].includes(type)) {
         return res.status(400).json({ message: 'Valid type (TEACH or LEARN) is required' });
     }
 
-    const session = driver.session();
     try {
         const relationType = type === 'TEACH' ? 'TEACHES' : 'WANTS_TO_LEARN';
+        const skill = await db.get(`SELECT id FROM skills WHERE LOWER(name) = LOWER(?)`, name);
+        if (!skill) return res.status(404).json({ message: 'Skill not found' });
 
-        await session.run(
-            `
-            MATCH (u:User {id: $userId})-[r:${relationType}]->(s:Skill)
-            WHERE toLower(s.name) = toLower($name)
-            DELETE r
-            `,
-            { userId, name }
-        );
+        await db.run(`DELETE FROM user_skills WHERE user_id = ? AND skill_id = ? AND relation_type = ?`, userId, skill.id, relationType);
 
         res.json({ message: `Skill '${name}' removed` });
     } catch (error) {
         console.error('Remove skill error:', error);
         res.status(500).json({ message: 'Server error' });
-    } finally {
-        await session.close();
     }
 };
 
 const getUserSkills = async (req, res) => {
     const userId = req.user.id;
-    const session = driver.session();
+    const db = getDb();
     try {
-        const result = await session.run(
-            `
-            MATCH (u:User {id: $userId})
-            OPTIONAL MATCH (u)-[:TEACHES]->(t:Skill)
-            OPTIONAL MATCH (u)-[:WANTS_TO_LEARN]->(l:Skill)
-            RETURN collect(DISTINCT t.name) AS teach, collect(DISTINCT l.name) AS learn
-            `,
-            { userId }
-        );
+        const teachRows = await db.all(`SELECT s.name FROM skills s JOIN user_skills us ON s.id = us.skill_id WHERE us.user_id = ? AND us.relation_type = 'TEACHES'`, userId);
+        const learnRows = await db.all(`SELECT s.name FROM skills s JOIN user_skills us ON s.id = us.skill_id WHERE us.user_id = ? AND us.relation_type = 'WANTS_TO_LEARN'`, userId);
 
-        const record = result.records[0];
         res.json({
-            teach: record.get('teach').filter(s => s !== null),
-            learn: record.get('learn').filter(s => s !== null)
+            teach: teachRows.map(r => r.name),
+            learn: learnRows.map(r => r.name)
         });
     } catch (error) {
         console.error('Get user skills error:', error);
         res.status(500).json({ message: 'Server error' });
-    } finally {
-        await session.close();
     }
 };
 

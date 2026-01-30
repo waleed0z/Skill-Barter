@@ -1,106 +1,54 @@
-const { driver } = require('../config/db');
+const { getDb } = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { randomUUID } = require('crypto');
 
 const createUser = async (userData) => {
-    const session = driver.session();
-    try {
-        const hashedPassword = await bcrypt.hash(userData.password, 10);
-        const result = await session.run(
-            `CREATE (u:User {
-                id: randomUUID(),
-                name: $name,
-                email: $email,
-                password: $password,
-                timeCredits: 0,
-                createdAt: datetime(),
-                isVerified: false,
-                otp: $otp,
-                otpExpires: $otpExpires
-            }) RETURN u`,
-            {
-                name: userData.name,
-                email: userData.email,
-                password: hashedPassword,
-                otp: userData.otp,
-                otpExpires: userData.otpExpires.toISOString() // Store as ISO string
-            }
-        );
-        return result.records[0].get('u').properties;
-    } finally {
-        await session.close();
-    }
+    const db = getDb();
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const id = randomUUID();
+    const createdAt = new Date().toISOString();
+    const isVerified = 0;
+
+    await db.run(
+        `INSERT INTO users (id, name, email, password, timeCredits, createdAt, isVerified, otp, otpExpires)
+         VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+        id, userData.name, userData.email, hashedPassword, createdAt, isVerified, userData.otp, userData.otpExpires.toISOString()
+    );
+
+    const user = await db.get(`SELECT * FROM users WHERE id = ?`, id);
+    // convert isVerified to boolean
+    user.isVerified = Boolean(user.isVerified);
+    return user;
 };
 
 const findUserByEmail = async (email) => {
-    const session = driver.session();
-    try {
-        const result = await session.run(
-            `MATCH (u:User {email: $email}) RETURN u`,
-            { email }
-        );
-        if (result.records.length === 0) return null;
-        return result.records[0].get('u').properties;
-    } finally {
-        await session.close();
-    }
+    const db = getDb();
+    const user = await db.get(`SELECT * FROM users WHERE email = ?`, email);
+    if (!user) return null;
+    user.isVerified = Boolean(user.isVerified);
+    return user;
 };
 
 const verifyUser = async (email) => {
-    const session = driver.session();
-    try {
-        await session.run(
-            `MATCH (u:User {email: $email})
-             SET u.isVerified = true, u.otp = null, u.otpExpires = null
-             RETURN u`,
-            { email }
-        );
-    } finally {
-        await session.close();
-    }
+    const db = getDb();
+    await db.run(`UPDATE users SET isVerified = 1, otp = NULL, otpExpires = NULL WHERE email = ?`, email);
 };
 
 const setPasswordResetToken = async (email, token, expires) => {
-    const session = driver.session();
-    try {
-        const expiresStr = expires.toISOString();
-        await session.run(
-            `MATCH (u:User {email: $email})
-             SET u.resetPasswordToken = $token, u.resetPasswordExpires = $expires
-             RETURN u`,
-            { email, token, expires: expiresStr }
-        );
-    } finally {
-        await session.close();
-    }
+    const db = getDb();
+    const expiresStr = expires.toISOString();
+    await db.run(`UPDATE users SET resetPasswordToken = ?, resetPasswordExpires = ? WHERE email = ?`, token, expiresStr, email);
 };
 
 const updatePassword = async (email, newPassword) => {
-    const session = driver.session();
-    try {
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await session.run(
-            `MATCH (u:User {email: $email})
-             SET u.password = $password, u.resetPasswordToken = null, u.resetPasswordExpires = null
-             RETURN u`,
-            { email, password: hashedPassword }
-        );
-    } finally {
-        await session.close();
-    }
+    const db = getDb();
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.run(`UPDATE users SET password = ?, resetPasswordToken = NULL, resetPasswordExpires = NULL WHERE email = ?`, hashedPassword, email);
 };
 
 const updateOtp = async (email, otp, otpExpires) => {
-    const session = driver.session();
-    try {
-        await session.run(
-            `MATCH (u:User {email: $email})
-             SET u.otp = $otp, u.otpExpires = $otpExpires
-             RETURN u`,
-            { email, otp, otpExpires: otpExpires.toISOString() }
-        );
-    } finally {
-        await session.close();
-    }
+    const db = getDb();
+    await db.run(`UPDATE users SET otp = ?, otpExpires = ? WHERE email = ?`, otp, otpExpires.toISOString(), email);
 };
 
 module.exports = { createUser, findUserByEmail, verifyUser, setPasswordResetToken, updatePassword, updateOtp };

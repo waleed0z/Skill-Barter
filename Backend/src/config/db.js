@@ -1,20 +1,63 @@
-const neo4j = require('neo4j-driver');
+const sqlite3 = require('sqlite3').verbose();
+const { open } = require('sqlite');
+const path = require('path');
 require('dotenv').config();
 
-const uri = process.env.NEO4J_URI || 'bolt://localhost:7687';
-const user = process.env.NEO4J_USER || 'neo4j';
-const password = process.env.NEO4J_PASSWORD || 'password';
+const dbFile = process.env.SQLITE_FILE || path.resolve(__dirname, '../../data/db.sqlite');
+let db;
 
-const driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
-
-const verifyConnection = async () => {
-    try {
-        await driver.verifyConnectivity();
-        console.log('Connected to Neo4j');
-    } catch (error) {
-        console.error('Neo4j connection failed:', error);
-        throw error;
-    }
+const initDb = async () => {
+    db = await open({ filename: dbFile, driver: sqlite3.Database });
+    await db.exec(`PRAGMA foreign_keys = ON;`);
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            timeCredits INTEGER DEFAULT 0,
+            createdAt TEXT,
+            isVerified INTEGER DEFAULT 0,
+            otp TEXT,
+            otpExpires TEXT,
+            resetPasswordToken TEXT,
+            resetPasswordExpires TEXT
+        );
+        CREATE TABLE IF NOT EXISTS skills (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS user_skills (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            skill_id INTEGER NOT NULL,
+            relation_type TEXT NOT NULL,
+            UNIQUE(user_id, skill_id, relation_type),
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(skill_id) REFERENCES skills(id) ON DELETE CASCADE
+        );
+        CREATE TABLE IF NOT EXISTS transactions (
+            id TEXT PRIMARY KEY,
+            amount INTEGER NOT NULL,
+            date TEXT NOT NULL,
+            sender_id TEXT NOT NULL,
+            receiver_id TEXT NOT NULL,
+            FOREIGN KEY(sender_id) REFERENCES users(id),
+            FOREIGN KEY(receiver_id) REFERENCES users(id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+        CREATE INDEX IF NOT EXISTS idx_skills_name ON skills(name);
+    `);
+    console.log('SQLite DB initialized at', dbFile);
 };
 
-module.exports = { driver, verifyConnection };
+const getDb = () => {
+    if (!db) throw new Error('Database not initialized. Call initDb first.');
+    return db;
+};
+
+const verifyConnection = async () => {
+    if (!db) await initDb();
+};
+
+module.exports = { initDb, getDb, verifyConnection };
