@@ -74,13 +74,30 @@
         </main>
     </div>
 
-    <script src="script.js"></script>
-    <script src="data.js"></script>
+    <script src="js/dummy-loader.js"></script>
+    <script src="js/api-client.js"></script>
     <script>
         // Ratings page specific JS
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSessionSummary();
-            loadPastRatings();
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Try to load session data from API
+                const sessionId = new URLSearchParams(window.location.search).get('sessionId');
+                if (sessionId) {
+                    // Load actual session data from API
+                    const session = await getCurrentSession(); // This might not be implemented yet
+                    loadSessionSummary(session);
+                } else {
+                    // Fallback to dummy data
+                    await loadDummyData();
+                    loadSessionSummary(dummyData.session);
+                }
+
+                await loadPastRatings();
+            } catch (error) {
+                console.error('Error loading session data:', error);
+                // Still attach the form handler even if data loading fails
+                loadSessionSummary(null); // Load with empty session
+            }
 
             document.getElementById('rating-form').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -88,42 +105,70 @@
             });
         });
 
-        function loadSessionSummary() {
-            const session = mockCurrentSession;
+        function loadSessionSummary(sessionData) {
+            // If no session data, use dummy data
+            const session = sessionData || (dummyData && dummyData.session) || {
+                skill: { name: 'Sample Skill' },
+                teacher: { name: 'Sample Teacher' },
+                startTime: new Date().toISOString()
+            };
+
             const summaryEl = document.getElementById('session-summary');
 
             summaryEl.innerHTML = `
                 <div class="summary-card">
-                    <p><strong>Skill:</strong> ${session.skill}</p>
-                    <p><strong>With:</strong> ${session.partner}</p>
-                    <p><strong>Date:</strong> ${new Date(session.date).toLocaleDateString()}</p>
-                    <p><strong>Time:</strong> ${session.time}</p>
+                    <p><strong>Skill:</strong> ${session.skill?.name || 'Unknown'}</p>
+                    <p><strong>With:</strong> ${session.teacher?.name || 'Unknown'}</p>
+                    <p><strong>Date:</strong> ${new Date(session.startTime || session.startTime || new Date()).toLocaleDateString()}</p>
+                    <p><strong>Time:</strong> ${new Date(session.startTime || session.startTime || new Date()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                 </div>
             `;
         }
 
-        function loadPastRatings() {
+        async function loadPastRatings() {
+            try {
+                // Try to load ratings from API
+                const ratings = await getCreditHistory(); // Using credit history as a proxy since ratings endpoint might not exist yet
+                displayRatings(ratings);
+            } catch (error) {
+                console.warn('Failed to load ratings from API, using dummy data:', error);
+
+                // Fallback to dummy data if API fails
+                if (dummyData && dummyData.ratings) {
+                    displayRatings(dummyData.ratings);
+                } else {
+                    document.getElementById('past-ratings').innerHTML = '<p>No past ratings available</p>';
+                }
+            }
+        }
+
+        function displayRatings(ratings) {
             const ratingsContainer = document.getElementById('past-ratings');
             ratingsContainer.innerHTML = '';
 
-            mockRatings.forEach(rating => {
+            if (!ratings || ratings.length === 0) {
+                ratingsContainer.innerHTML = '<p>No past ratings available</p>';
+                return;
+            }
+
+            ratings.forEach(rating => {
                 const ratingEl = document.createElement('div');
                 ratingEl.className = 'rating-card';
                 ratingEl.innerHTML = `
                     <div class="rating-header">
-                        <h4>${rating.skill} with ${rating.partner}</h4>
+                        <h4>${rating.skill?.name || rating.skill || 'Unknown Skill'} with ${rating.partner || 'Unknown Partner'}</h4>
                         <div class="rating-stars">
-                            ${'★'.repeat(rating.stars)}${'☆'.repeat(5 - rating.stars)}
+                            ${'★'.repeat(rating.stars || rating.rating || 0)}${'☆'.repeat(5 - (rating.stars || rating.rating || 0))}
                         </div>
                     </div>
-                    <p class="rating-comment">${rating.comment || 'No comment provided'}</p>
-                    <small class="rating-date">${new Date(rating.date).toLocaleDateString()}</small>
+                    <p class="rating-comment">${rating.comment || rating.review || 'No comment provided'}</p>
+                    <small class="rating-date">${new Date(rating.date || new Date()).toLocaleDateString()}</small>
                 `;
                 ratingsContainer.appendChild(ratingEl);
             });
         }
 
-        function submitRating() {
+        async function submitRating() {
             const rating = document.querySelector('input[name="rating"]:checked');
             const comment = document.getElementById('rating-comment').value;
 
@@ -132,18 +177,26 @@
                 return;
             }
 
-            // In production, this would send to backend
-            const newRating = {
-                skill: mockCurrentSession.skill,
-                partner: mockCurrentSession.partner,
-                stars: parseInt(rating.value),
-                comment: comment,
-                date: new Date().toISOString()
-            };
+            try {
+                // Try to submit rating to API
+                const sessionId = new URLSearchParams(window.location.search).get('sessionId');
+                if (sessionId) {
+                    await completeSession(sessionId, {
+                        rating: parseInt(rating.value),
+                        feedback: comment
+                    });
 
-            mockRatings.unshift(newRating);
-            alert('Rating submitted successfully!');
-            window.location.href = 'dashboard.html';
+                    alert('Rating submitted successfully!');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Fallback if no session ID is provided
+                    alert('Rating recorded locally. Backend integration coming soon!');
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (error) {
+                console.error('Error submitting rating:', error);
+                alert('Failed to submit rating: ' + error.message);
+            }
         }
     </script>
 </body>
