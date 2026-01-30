@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // Serve static files from the Frontend directory
-app.use(express.static(path.join(__dirname, '../../Frontend')));
+app.use(express.static(path.join(process.cwd(), 'Frontend')));
 
 // API Routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -32,7 +32,7 @@ app.use('/credits', creditRoutes);
 // Catch-all handler: serve frontend for non-API routes
 app.get(/^(?!\/auth|\/skills|\/credits|\/api-docs).*$/, (req, res) => {
     // Serve the frontend for all routes that don't match API routes
-    res.sendFile(path.join(__dirname, '../../Frontend/index.html'));
+    res.sendFile(path.join(process.cwd(), 'Frontend', 'index.html'));
 });
 
 module.exports = app;
