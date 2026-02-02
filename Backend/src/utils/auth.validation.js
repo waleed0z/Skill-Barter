@@ -14,10 +14,7 @@ const loginSchema = Joi.object({
     password: Joi.string().required(),
 });
 
-const verifyEmailSchema = Joi.object({
-    email: Joi.string().email().required(),
-    otp: Joi.string().length(6).pattern(/^[0-9]+$/).required(),
-});
+// Removed verifyEmailSchema since we're not using OTP
 
 const forgotPasswordSchema = Joi.object({
     email: Joi.string().email().required(),
@@ -35,7 +32,6 @@ const resetPasswordSchema = Joi.object({
 module.exports = {
     signupSchema,
     loginSchema,
-    verifyEmailSchema,
     forgotPasswordSchema,
     resetPasswordSchema
 };

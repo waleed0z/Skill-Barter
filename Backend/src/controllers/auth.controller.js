@@ -2,8 +2,6 @@ const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const { sendEmail } = require('../services/email.service');
-const { generateAndSendOtp } = require('../services/otp.service');
 require('dotenv').config();
 
 const signup = async (req, res) => {
@@ -15,34 +13,23 @@ const signup = async (req, res) => {
 
         const existingUser = await User.findUserByEmail(email);
         if (existingUser) {
-            if (existingUser.isVerified) {
-                return res.status(409).json({ message: 'User already exists' });
-            } else {
-                // Resend OTP logic
-                const otp = Math.floor(100000 + Math.random() * 900000).toString();
-                const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-                await User.updateOtp(email, otp, otpExpires);
-                await sendEmail(email, 'Verify your email', `Your OTP is ${otp}`, `<p>Your OTP is <b>${otp}</b></p>`);
-
-                return res.status(200).json({
-                    message: 'User already exists but is not verified. Verification email resent.',
-                    userId: existingUser.id
-                });
-            }
+            return res.status(409).json({ message: 'User already exists' });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+        // Create user with is_verified = true by default (no OTP required)
+        const newUser = await User.createUser({ name, email, password });
 
-        // Create user first with the OTP
-        const newUser = await User.createUser({ name, email, password, otp, otpExpires });
+        const token = jwt.sign(
+            { id: newUser.id, email: newUser.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
 
-        await sendEmail(email, 'Verify your email', `Your OTP is ${otp}`, `<p>Your OTP is <b>${otp}</b></p>`);
-
+        const { password: _, ...userSafe } = newUser;
         res.status(201).json({
-            message: 'User created successfully. Please verify your email.',
-            userId: newUser.id
+            message: 'User created successfully',
+            token,
+            user: userSafe
         });
     } catch (error) {
         console.error('Signup error:', error);
@@ -50,23 +37,7 @@ const signup = async (req, res) => {
     }
 };
 
-const verifyEmail = async (req, res) => {
-    try {
-        const { email, otp } = req.body;
-        const user = await User.findUserByEmail(email);
-
-        if (!user) return res.status(404).json({ message: 'User not found' });
-        if (user.isVerified) return res.status(400).json({ message: 'Email already verified' });
-
-        if (user.otp !== otp) return res.status(400).json({ message: 'Invalid OTP' });
-
-        await User.verifyUser(email);
-        res.json({ message: 'Email verified successfully' });
-    } catch (error) {
-        console.error('Verify email error:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-};
+// Removed verifyEmail function since we're not using OTP
 
 const login = async (req, res) => {
     try {
@@ -81,11 +52,6 @@ const login = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        if (!user.isVerified) {
-            await generateAndSendOtp(user.email);
-            return res.status(403).json({ message: 'Account not verified. A new verification code has been sent to your email.' });
-        }
-
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid credentials' });
@@ -97,7 +63,7 @@ const login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        const { password: _, otp: __, ...userSafe } = user;
+        const { password: _, ...userSafe } = user;
         res.json({
             message: 'Login successful',
             token,
@@ -120,10 +86,9 @@ const forgotPassword = async (req, res) => {
 
         await User.setPasswordResetToken(email, token, expires);
 
-        const resetLink = `${process.env.APP_URL}/reset-password/${token}`;
-        await sendEmail(email, 'Password Reset', `Reset link: ${resetLink}`, `<a href="${resetLink}">Reset Password</a>`);
-
-        res.json({ message: 'Password reset link sent' });
+        // In a real app, you would send an email here
+        // For now, we'll just return the token for testing
+        res.json({ message: 'Password reset token generated', token });
     } catch (error) {
         console.error('Forgot password error:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -160,4 +125,4 @@ const getProfile = async (req, res) => {
     }
 };
 
-module.exports = { signup, verifyEmail, login, forgotPassword, resetPassword, getProfile };
+module.exports = { signup, login, forgotPassword, resetPassword, getProfile };

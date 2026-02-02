@@ -1,110 +1,173 @@
-const { driver } = require('../config/db');
+const { db } = require('../config/db');
 
 const getBalance = async (req, res) => {
     const userId = req.user.id;
-    const session = driver.session();
     try {
-        const result = await session.run(
-            `MATCH (u:User {id: $userId}) RETURN u.timeCredits AS balance`,
-            { userId }
-        );
+        const query = 'SELECT time_credits AS balance FROM users WHERE id = ?';
+        db.get(query, [userId], (err, row) => {
+            if (err) {
+                console.error('Get balance error:', err);
+                return res.status(500).json({ message: 'Server error' });
+            }
 
-        if (result.records.length === 0) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+            if (!row) {
+                return res.status(404).json({ message: 'User not found' });
+            }
 
-        const balance = result.records[0].get('balance').toNumber();
-        res.json({ balance });
+            const balance = row.balance;
+            res.json({ balance });
+        });
     } catch (error) {
         console.error('Get balance error:', error);
         res.status(500).json({ message: 'Server error' });
-    } finally {
-        await session.close();
     }
 };
 
 const getHistory = async (req, res) => {
     const userId = req.user.id;
-    const session = driver.session();
     try {
         // Find transactions where user was sender or receiver
-        const result = await session.run(
-            `
-            MATCH (u:User {id: $userId})
-            OPTIONAL MATCH (u)-[:SENT]->(t:Transaction)-[:TO]->(receiver:User)
-            RETURN t, 'SENT' AS type, receiver.name AS otherParty
-            UNION
-            MATCH (u:User {id: $userId})<-[:TO]-(t:Transaction)<-[:SENT]-(sender:User)
-            RETURN t, 'RECEIVED' AS type, sender.name AS otherParty
+        const query = `
+            SELECT 
+                t.id,
+                t.amount,
+                t.date,
+                CASE 
+                    WHEN t.sender_id = ? THEN 'SENT' 
+                    ELSE 'RECEIVED' 
+                END AS type,
+                u.name AS other_party
+            FROM transactions t
+            JOIN users u ON 
+                CASE 
+                    WHEN t.sender_id = ? THEN u.id = t.receiver_id
+                    ELSE u.id = t.sender_id
+                END
+            WHERE t.sender_id = ? OR t.receiver_id = ?
             ORDER BY t.date DESC
-            `,
-            { userId }
-        );
+        `;
+        
+        db.all(query, [userId, userId, userId, userId], (err, rows) => {
+            if (err) {
+                console.error('Get history error:', err);
+                return res.status(500).json({ message: 'Server error' });
+            }
 
-        const history = result.records.map(record => {
-            const t = record.get('t')?.properties;
-            if (!t) return null;
-            return {
-                id: t.id,
-                amount: t.amount.toNumber(),
-                date: t.date,
-                type: record.get('type'),
-                otherParty: record.get('otherParty')
-            };
-        }).filter(item => item !== null);
+            const history = rows.map(row => ({
+                id: row.id,
+                amount: row.amount,
+                date: row.date,
+                type: row.type,
+                otherParty: row.other_party
+            }));
 
-        res.json(history);
+            res.json(history);
+        });
     } catch (error) {
         console.error('Get history error:', error);
         res.status(500).json({ message: 'Server error' });
-    } finally {
-        await session.close();
     }
 };
 
 // Internal function to transfer credits (can be exposed via API if needed)
 const transferCredits = async (senderId, receiverEmail, amount) => {
-    const session = driver.session();
-    const tx = session.beginTransaction();
-    try {
-        // Check sender balance
-        const senderRes = await tx.run(
-            `MATCH (u:User {id: $senderId}) RETURN u.timeCredits AS balance`,
-            { senderId }
-        );
-        if (senderRes.records.length === 0) throw new Error('Sender not found');
-
-        const balance = senderRes.records[0].get('balance').toNumber();
-        if (balance < amount) throw new Error('Insufficient credits');
-
-        // Check receiver
-        const receiverRes = await tx.run(
-            `MATCH (u:User {email: $receiverEmail}) RETURN u`,
-            { receiverEmail }
-        );
-        if (receiverRes.records.length === 0) throw new Error('Receiver not found');
-
-        // Perform Transfer
-        await tx.run(
-            `
-            MATCH (sender:User {id: $senderId})
-            MATCH (receiver:User {email: $receiverEmail})
-            CREATE (t:Transaction {id: randomUUID(), amount: $amount, date: datetime()})
-            CREATE (sender)-[:SENT]->(t)-[:TO]->(receiver)
-            SET sender.timeCredits = sender.timeCredits - $amount
-            SET receiver.timeCredits = receiver.timeCredits + $amount
-            `,
-            { senderId, receiverEmail, amount }
-        );
-
-        await tx.commit();
-        return { success: true };
-    } catch (error) {
-        await tx.rollback();
-        throw error;
-    } finally {
-        await session.close();
-    }
+    return new Promise(async (resolve, reject) => {
+        // Begin transaction
+        db.serialize(() => {
+            db.run('BEGIN TRANSACTION');
+            
+            try {
+                // Check sender balance
+                const senderQuery = 'SELECT time_credits AS balance FROM users WHERE id = ?';
+                db.get(senderQuery, [senderId], (err, senderRow) => {
+                    if (err) {
+                        db.run('ROLLBACK');
+                        reject(new Error('Error checking sender balance'));
+                        return;
+                    }
+                    
+                    if (!senderRow) {
+                        db.run('ROLLBACK');
+                        reject(new Error('Sender not found'));
+                        return;
+                    }
+                    
+                    const balance = senderRow.balance;
+                    if (balance < amount) {
+                        db.run('ROLLBACK');
+                        reject(new Error('Insufficient credits'));
+                        return;
+                    }
+                    
+                    // Get receiver ID
+                    const receiverQuery = 'SELECT id FROM users WHERE email = ?';
+                    db.get(receiverQuery, [receiverEmail], (err, receiverRow) => {
+                        if (err) {
+                            db.run('ROLLBACK');
+                            reject(new Error('Error finding receiver'));
+                            return;
+                        }
+                        
+                        if (!receiverRow) {
+                            db.run('ROLLBACK');
+                            reject(new Error('Receiver not found'));
+                            return;
+                        }
+                        
+                        const receiverId = receiverRow.id;
+                        const transactionId = require('uuid').v4();
+                        
+                        // Update sender balance
+                        const updateSenderQuery = 'UPDATE users SET time_credits = time_credits - ? WHERE id = ?';
+                        db.run(updateSenderQuery, [amount, senderId], function(err) {
+                            if (err) {
+                                db.run('ROLLBACK');
+                                reject(new Error('Error updating sender balance'));
+                                return;
+                            }
+                            
+                            // Update receiver balance
+                            const updateReceiverQuery = 'UPDATE users SET time_credits = time_credits + ? WHERE id = ?';
+                            db.run(updateReceiverQuery, [amount, receiverId], function(err) {
+                                if (err) {
+                                    db.run('ROLLBACK');
+                                    reject(new Error('Error updating receiver balance'));
+                                    return;
+                                }
+                                
+                                // Insert transaction record
+                                const insertTransactionQuery = `
+                                    INSERT INTO transactions (id, sender_id, receiver_id, amount, date)
+                                    VALUES (?, ?, ?, ?, datetime('now'))
+                                `;
+                                db.run(insertTransactionQuery, [transactionId, senderId, receiverId, amount], function(err) {
+                                    if (err) {
+                                        db.run('ROLLBACK');
+                                        reject(new Error('Error recording transaction'));
+                                        return;
+                                    }
+                                    
+                                    // Commit transaction
+                                    db.run('COMMIT', (err) => {
+                                        if (err) {
+                                            db.run('ROLLBACK');
+                                            reject(new Error('Error committing transaction'));
+                                            return;
+                                        }
+                                        
+                                        resolve({ success: true });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            } catch (error) {
+                db.run('ROLLBACK');
+                reject(error);
+            }
+        });
+    });
 };
 
 module.exports = { getBalance, getHistory, transferCredits };

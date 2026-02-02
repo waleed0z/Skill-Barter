@@ -1,106 +1,146 @@
-const { driver } = require('../config/db');
+const { db } = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
 
 const createUser = async (userData) => {
-    const session = driver.session();
-    try {
+    return new Promise(async (resolve, reject) => {
         const hashedPassword = await bcrypt.hash(userData.password, 10);
-        const result = await session.run(
-            `CREATE (u:User {
-                id: randomUUID(),
-                name: $name,
-                email: $email,
-                password: $password,
-                timeCredits: 0,
-                createdAt: datetime(),
-                isVerified: false,
-                otp: $otp,
-                otpExpires: $otpExpires
-            }) RETURN u`,
-            {
-                name: userData.name,
-                email: userData.email,
-                password: hashedPassword,
-                otp: userData.otp,
-                otpExpires: userData.otpExpires.toISOString() // Store as ISO string
+        const userId = uuidv4();
+
+        const query = `
+            INSERT INTO users (id, name, email, password, time_credits, is_verified)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+
+        const params = [
+            userId,
+            userData.name,
+            userData.email,
+            hashedPassword,
+            0, // time_credits default to 0
+            1  // is_verified default to true (no OTP required)
+        ];
+
+        db.run(query, params, function(err) {
+            if (err) {
+                console.error('Error creating user:', err);
+                reject(err);
+            } else {
+                // Return the created user
+                const selectQuery = 'SELECT * FROM users WHERE id = ?';
+                db.get(selectQuery, [userId], (err, row) => {
+                    if (err) {
+                        console.error('Error retrieving created user:', err);
+                        reject(err);
+                    } else {
+                        // Map database columns to JavaScript properties and convert booleans
+                        if (row) {
+                            row.isVerified = Boolean(row.is_verified);
+                        }
+                        resolve(row);
+                    }
+                });
             }
-        );
-        return result.records[0].get('u').properties;
-    } finally {
-        await session.close();
-    }
+        });
+    });
 };
 
 const findUserByEmail = async (email) => {
-    const session = driver.session();
-    try {
-        const result = await session.run(
-            `MATCH (u:User {email: $email}) RETURN u`,
-            { email }
-        );
-        if (result.records.length === 0) return null;
-        return result.records[0].get('u').properties;
-    } finally {
-        await session.close();
-    }
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT * FROM users WHERE email = ?';
+        db.get(query, [email], (err, row) => {
+            if (err) {
+                console.error('Error finding user by email:', err);
+                reject(err);
+            } else {
+                // Map database columns to JavaScript properties and convert booleans
+                if (row) {
+                    // Convert snake_case to camelCase and handle boolean conversions
+                    row.isVerified = Boolean(row.is_verified);
+                }
+                resolve(row);
+            }
+        });
+    });
 };
 
 const verifyUser = async (email) => {
-    const session = driver.session();
-    try {
-        await session.run(
-            `MATCH (u:User {email: $email})
-             SET u.isVerified = true, u.otp = null, u.otpExpires = null
-             RETURN u`,
-            { email }
-        );
-    } finally {
-        await session.close();
-    }
+    return new Promise((resolve, reject) => {
+        const query = `
+            UPDATE users
+            SET is_verified = 1, otp = NULL, otp_expires = NULL
+            WHERE email = ?
+        `;
+        db.run(query, [email], function(err) {
+            if (err) {
+                console.error('Error verifying user:', err);
+                reject(err);
+            } else {
+                resolve(this.changes > 0); // Return true if a row was updated
+            }
+        });
+    });
 };
 
 const setPasswordResetToken = async (email, token, expires) => {
-    const session = driver.session();
-    try {
-        const expiresStr = expires.toISOString();
-        await session.run(
-            `MATCH (u:User {email: $email})
-             SET u.resetPasswordToken = $token, u.resetPasswordExpires = $expires
-             RETURN u`,
-            { email, token, expires: expiresStr }
-        );
-    } finally {
-        await session.close();
-    }
+    return new Promise((resolve, reject) => {
+        const query = `
+            UPDATE users 
+            SET reset_password_token = ?, reset_password_expires = ? 
+            WHERE email = ?
+        `;
+        db.run(query, [token, expires.toISOString(), email], function(err) {
+            if (err) {
+                console.error('Error setting password reset token:', err);
+                reject(err);
+            } else {
+                resolve(this.changes > 0);
+            }
+        });
+    });
 };
 
 const updatePassword = async (email, newPassword) => {
-    const session = driver.session();
-    try {
+    return new Promise(async (resolve, reject) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await session.run(
-            `MATCH (u:User {email: $email})
-             SET u.password = $password, u.resetPasswordToken = null, u.resetPasswordExpires = null
-             RETURN u`,
-            { email, password: hashedPassword }
-        );
-    } finally {
-        await session.close();
-    }
+        const query = `
+            UPDATE users 
+            SET password = ?, reset_password_token = NULL, reset_password_expires = NULL 
+            WHERE email = ?
+        `;
+        db.run(query, [hashedPassword, email], function(err) {
+            if (err) {
+                console.error('Error updating password:', err);
+                reject(err);
+            } else {
+                resolve(this.changes > 0);
+            }
+        });
+    });
 };
 
 const updateOtp = async (email, otp, otpExpires) => {
-    const session = driver.session();
-    try {
-        await session.run(
-            `MATCH (u:User {email: $email})
-             SET u.otp = $otp, u.otpExpires = $otpExpires
-             RETURN u`,
-            { email, otp, otpExpires: otpExpires.toISOString() }
-        );
-    } finally {
-        await session.close();
-    }
+    return new Promise((resolve, reject) => {
+        const query = `
+            UPDATE users 
+            SET otp = ?, otp_expires = ? 
+            WHERE email = ?`;
+        db.run(query, [otp, otpExpires.toISOString(), email], function(err) {
+            if (err) {
+                console.error('Error updating OTP:', err);
+                reject(err);
+            } else {
+                resolve(this.changes > 0);
+            }
+        });
+    });
 };
 
-module.exports = { createUser, findUserByEmail, verifyUser, setPasswordResetToken, updatePassword, updateOtp };
+module.exports = { 
+    createUser, 
+    findUserByEmail, 
+    verifyUser, 
+    setPasswordResetToken, 
+    updatePassword, 
+    updateOtp 
+};

@@ -1,20 +1,22 @@
-const neo4j = require('neo4j-driver');
-require('dotenv').config();
+const { db, createTables } = require('./db.sqlite');
 
-const uri = process.env.NEO4J_URI || 'bolt://localhost:7687';
-const user = process.env.NEO4J_USER || 'neo4j';
-const password = process.env.NEO4J_PASSWORD || 'password';
-
-const driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
-
+// Verify connection by running a simple query
 const verifyConnection = async () => {
-    try {
-        await driver.verifyConnectivity();
-        console.log('Connected to Neo4j');
-    } catch (error) {
-        console.error('Neo4j connection failed:', error);
-        throw error;
-    }
+    // First, create the tables if they don't exist
+    await createTables();
+
+    return new Promise((resolve, reject) => {
+        // Test the connection by running a simple query
+        db.get('SELECT 1 as test', (err, row) => {
+            if (err) {
+                console.error('SQLite connection failed:', err);
+                reject(err);
+            } else {
+                console.log('Connected to SQLite database');
+                resolve(row);
+            }
+        });
+    });
 };
 
-module.exports = { driver, verifyConnection };
+module.exports = { db, verifyConnection };
