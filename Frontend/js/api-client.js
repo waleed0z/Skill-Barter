@@ -1,6 +1,6 @@
 // API Client - Configure with your backend URL
 const API_CONFIG = {
-  baseURL: 'http://localhost:5000', // Update this to your backend URL
+  baseURL: 'https://skill-barter-afc7lg.fly.dev', // Update this to your backend URL
   timeout: 10000
 };
 
