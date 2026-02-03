@@ -23,12 +23,10 @@ const getBalance = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-};
 
-const getHistory = async (req, res) => {
+const getHistory = (req, res) => {
     const userId = req.user.id;
-    try {
-        // Find transactions where user was sender or receiver
+    // Find transactions where user was sender or receiver
         const query = `
             SELECT
                 t.id,
@@ -65,10 +63,6 @@ const getHistory = async (req, res) => {
 
             res.json(history);
         });
-    } catch (error) {
-        console.error('Get history error:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
 };
 
 // Internal function to transfer credits (can be exposed via API if needed)
