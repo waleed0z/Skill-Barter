@@ -1,5 +1,5 @@
 const { db } = require('../config/db');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 // Get user's sessions
 const getUserSessions = async (req, res) => {
@@ -68,7 +68,7 @@ const scheduleSession = async (req, res) => {
 
     try {
         // Generate a unique ID for the session
-        const sessionId = uuidv4();
+        const sessionId = randomUUID();
 
         // Generate a unique Jitsi room name based on session ID
         const jitsiRoom = `skillbarter_${sessionId.replace(/-/g, '')}`;
