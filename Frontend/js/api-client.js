@@ -1,6 +1,8 @@
 // API Client - Configure with your backend URL
 const API_CONFIG = {
-  baseURL: 'http://localhost:5000', // Update this to your backend URL
+  baseURL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : 'https://skill-barter-19m0.onrender.com',
   timeout: 10000
 };
 

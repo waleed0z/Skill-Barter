@@ -2,7 +2,7 @@
 class SkillBarterApp {
     constructor() {
         this.token = localStorage.getItem('token');
-        this.currentUser = JSON.parse(localStorage.getItem('user')) || null;
+        this.currentUser = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
         this.init();
     }
 
@@ -60,7 +60,10 @@ class SkillBarterApp {
     }
 
     async apiCall(endpoint, options = {}) {
-        const url = `https://skill-barter-19m0.onrender.com${endpoint}`;
+        const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://skill-barter-19m0.onrender.com';
+        const url = `${baseUrl}${endpoint}`;
         const headers = {
             'Content-Type': 'application/json',
             ...options.headers
