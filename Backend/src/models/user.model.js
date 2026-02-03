@@ -1,11 +1,11 @@
 const { db } = require('../config/db');
 const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 const createUser = async (userData) => {
     return new Promise(async (resolve, reject) => {
         const hashedPassword = await bcrypt.hash(userData.password, 10);
-        const userId = uuidv4();
+        const userId = randomUUID();
 
         const query = `
             INSERT INTO users (id, name, email, password, time_credits, is_verified)
