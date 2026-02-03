@@ -1,5 +1,5 @@
 const { db } = require('../config/db');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 // Send an invitation to a user
 const sendInvitation = async (req, res) => {
@@ -49,7 +49,7 @@ const sendInvitation = async (req, res) => {
                     }
                     
                     // Create the invitation
-                    const invitationId = uuidv4();
+                    const invitationId = randomUUID();
                     const insertQuery = `
                         INSERT INTO invitations (id, sender_id, receiver_id, skill_id, message, status)
                         VALUES (?, ?, ?, ?, ?, ?)
@@ -172,7 +172,7 @@ const respondToInvitation = async (req, res) => {
                 
                 // If accepted, create a session
                 if (status === 'accepted') {
-                    const sessionId = uuidv4();
+                    const sessionId = randomUUID();
                     const jitsiRoom = `skillbarter_${sessionId.replace(/-/g, '')}`;
                     
                     const sessionQuery = `
