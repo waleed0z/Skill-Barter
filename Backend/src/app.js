@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -24,7 +25,10 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Routes
+// Serve static files from the Frontend directory
+app.use(express.static(path.join(process.cwd(), 'Frontend')));
+
+// API Routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/auth', authRoutes);
 app.use('/skills', skillRoutes);
@@ -35,8 +39,10 @@ app.use('/ratings', ratingRoutes);
 app.use('/matching', matchingRoutes);
 app.use('/invitations', invitationRoutes);
 
-app.get('/', (req, res) => {
-    res.send('SkillBarter Backend is running');
+// Catch-all handler: serve frontend for non-API routes
+app.get(/^(?!\/auth|\/skills|\/credits|\/api-docs).*$/, (req, res) => {
+    // Serve the frontend for all routes that don't match API routes
+    res.sendFile(path.join(process.cwd(), 'Frontend', 'index.html'));
 });
 
 module.exports = app;
