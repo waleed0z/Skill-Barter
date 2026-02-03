@@ -4,22 +4,21 @@ const searchSkills = async (req, res) => {
     const { q } = req.query;
     if (!q) return res.json([]);
 
-<<<<<<< HEAD
     try {
         const query = `
-            SELECT name
-            FROM skills
+            SELECT name 
+            FROM skills 
             WHERE LOWER(name) LIKE LOWER(?)
             LIMIT 10
         `;
         const searchTerm = `%${q}%`;
-
+        
         db.all(query, [searchTerm], (err, rows) => {
             if (err) {
                 console.error('Search skills error:', err);
                 return res.status(500).json({ message: 'Server error' });
             }
-
+            
             const skills = rows.map(row => row.name);
             res.json(skills);
         });
@@ -89,7 +88,6 @@ const removeSkill = async (req, res) => {
     const { name } = req.params;
     const { type } = req.query;
     const userId = req.user.id;
-    const db = getDb();
 
     if (!type || !['TEACH', 'LEARN'].includes(type)) {
         return res.status(400).json({ message: 'Valid type (TEACH or LEARN) is required' });
@@ -144,7 +142,7 @@ const getUserSkills = async (req, res) => {
             JOIN skills s ON us.skill_id = s.id
             WHERE us.user_id = ?
         `;
-
+        
         db.all(query, [userId], (err, rows) => {
             if (err) {
                 console.error('Get user skills error:', err);
@@ -154,7 +152,7 @@ const getUserSkills = async (req, res) => {
             // Organize skills by type
             const teach = [];
             const learn = [];
-
+            
             rows.forEach(row => {
                 if (row.skill_type === 'TEACH') {
                     teach.push(row.name);
