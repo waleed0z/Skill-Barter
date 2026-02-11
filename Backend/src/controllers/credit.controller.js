@@ -66,7 +66,8 @@ const getHistory = (req, res) => {
 };
 
 // Internal function to transfer credits (can be exposed via API if needed)
-const transferCredits = async (senderId, receiverEmail, amount) => {
+// Now accepts receiverId (user id) rather than receiver email for efficiency
+const transferCredits = async (senderId, receiverId, amount) => {
     return new Promise(async (resolve, reject) => {
         // Begin transaction
         db.serialize(() => {
@@ -95,9 +96,17 @@ const transferCredits = async (senderId, receiverEmail, amount) => {
                         return;
                     }
 
-                    // Get receiver ID
-                    const receiverQuery = 'SELECT id FROM users WHERE email = ?';
-                    db.get(receiverQuery, [receiverEmail], (err, receiverRow) => {
+                    const targetReceiverId = receiverId;
+                    // If receiverId is not provided or invalid, abort
+                    if (!targetReceiverId) {
+                        db.run('ROLLBACK');
+                        reject(new Error('Receiver ID not provided'));
+                        return;
+                    }
+                    
+                    // Ensure receiver exists
+                    const receiverCheck = 'SELECT id FROM users WHERE id = ?';
+                    db.get(receiverCheck, [targetReceiverId], (err, receiverRow) => {
                         if (err) {
                             db.run('ROLLBACK');
                             reject(new Error('Error finding receiver'));
@@ -109,8 +118,6 @@ const transferCredits = async (senderId, receiverEmail, amount) => {
                             reject(new Error('Receiver not found'));
                             return;
                         }
-
-                        const receiverId = receiverRow.id;
                         const transactionId = randomUUID();
 
                         // Update sender balance
@@ -124,7 +131,7 @@ const transferCredits = async (senderId, receiverEmail, amount) => {
 
                             // Update receiver balance
                             const updateReceiverQuery = 'UPDATE users SET time_credits = time_credits + ? WHERE id = ?';
-                            db.run(updateReceiverQuery, [amount, receiverId], function(err) {
+                            db.run(updateReceiverQuery, [amount, targetReceiverId], function(err) {
                                 if (err) {
                                     db.run('ROLLBACK');
                                     reject(new Error('Error updating receiver balance'));
@@ -136,7 +143,7 @@ const transferCredits = async (senderId, receiverEmail, amount) => {
                                     INSERT INTO transactions (id, sender_id, receiver_id, amount, date)
                                     VALUES (?, ?, ?, ?, datetime('now'))
                                 `;
-                                db.run(insertTransactionQuery, [transactionId, senderId, receiverId, amount], function(err) {
+                                db.run(insertTransactionQuery, [transactionId, senderId, targetReceiverId, amount], function(err) {
                                     if (err) {
                                         db.run('ROLLBACK');
                                         reject(new Error('Error recording transaction'));

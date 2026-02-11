@@ -35,6 +35,62 @@ const sendInvitation = async (req, res) => {
                 if (!receiverSkillRow) {
                     return res.status(400).json({ message: 'The receiver does not teach this skill' });
                 }
+
+                // Check sender has enough credits to pay for a single session of this skill
+                const skillCreditQuery = 'SELECT payment_plan FROM skills WHERE id = ?';
+                db.get(skillCreditQuery, [skillId], (err, skillInfo) => {
+                    if (err) {
+                        console.error('Send invitation error fetching skill info:', err);
+                        return res.status(500).json({ message: 'Server error' });
+                    }
+
+                    // Default credit amount is 1 per 30 minutes; we don't know duration here, assume minimum 1 credit
+                    const requiredCredits = 1;
+                    db.get('SELECT time_credits FROM users WHERE id = ?', [senderId], (err, userRow) => {
+                        if (err) {
+                            console.error('Send invitation error checking balance:', err);
+                            return res.status(500).json({ message: 'Server error' });
+                        }
+
+                        const balance = userRow ? (userRow.time_credits || 0) : 0;
+                        if (balance < requiredCredits) {
+                            return res.status(400).json({ message: 'Insufficient credits to send invitation' });
+                        }
+
+                        // Check if an invitation already exists between these users for this skill
+                        const checkExistingQuery = 'SELECT id FROM invitations WHERE sender_id = ? AND receiver_id = ? AND skill_id = ? AND status = "pending"';
+                        db.get(checkExistingQuery, [senderId, receiverId, skillId], (err, existingInvite) => {
+                            if (err) {
+                                console.error('Send invitation error:', err);
+                                return res.status(500).json({ message: 'Server error' });
+                            }
+
+                            if (existingInvite) {
+                                return res.status(400).json({ message: 'An invitation already exists for this skill' });
+                            }
+
+                            // Create the invitation
+                            const invitationId = randomUUID();
+                            const insertQuery = `
+                                INSERT INTO invitations (id, sender_id, receiver_id, skill_id, message, status)
+                                VALUES (?, ?, ?, ?, ?, ?)
+                            `;
+
+                            db.run(insertQuery, [invitationId, senderId, receiverId, skillId, message || '', 'pending'], function(err) {
+                                if (err) {
+                                    console.error('Send invitation error:', err);
+                                    return res.status(500).json({ message: 'Server error' });
+                                }
+
+                                res.json({ 
+                                    message: 'Invitation sent successfully', 
+                                    invitationId: this.lastID 
+                                });
+                            });
+                        });
+                    });
+                });
+                return;
                 
                 // Check if an invitation already exists between these users for this skill
                 const checkExistingQuery = 'SELECT id FROM invitations WHERE sender_id = ? AND receiver_id = ? AND skill_id = ? AND status = "pending"';

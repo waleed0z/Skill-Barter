@@ -19,6 +19,7 @@ const getUserRatings = async (req, res) => {
             `;
             params = [userId];
         } else {
+            // Default to 'received' - ratings about this user
             query = `
                 SELECT r.*, s.scheduled_time as session_time, u.name as rater_name, sk.name as skill_name
                 FROM ratings r
@@ -36,6 +37,7 @@ const getUserRatings = async (req, res) => {
                 console.error('Get ratings error:', err);
                 return res.status(500).json({ message: 'Server error' });
             }
+            console.log('Ratings returned from DB:', rows); // Debug log
             res.json(rows);
         });
     } catch (error) {

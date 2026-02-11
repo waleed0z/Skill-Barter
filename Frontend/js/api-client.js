@@ -91,9 +91,15 @@ async function getLearningSkills() {
   return apiCall('/skills/user?type=LEARN');
 }
 
-async function addSkill(skillName, skillType) {
+async function addSkill(skillName, skillType, options = {}) {
   const type = skillType.toUpperCase() === 'TEACH' ? 'TEACH' : 'LEARN';
-  return apiCall('/skills', 'POST', { name: skillName, type });
+  const body = { name: skillName, type };
+  if (options.isCourse) {
+    body.isCourse = true;
+    if (options.totalSessions) body.totalSessions = options.totalSessions;
+    if (options.paymentPlan) body.paymentPlan = options.paymentPlan;
+  }
+  return apiCall('/skills', 'POST', body);
 }
 
 // Session endpoints - NOTE: These routes not yet implemented in backend

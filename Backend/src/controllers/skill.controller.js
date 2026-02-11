@@ -38,42 +38,56 @@ const addSkill = async (req, res) => {
     );
 
     try {
+        const isCourseFlag = req.body.isCourse ? 1 : 0;
+        const totalSessions = req.body.totalSessions || null;
+        const paymentPlan = req.body.paymentPlan || 'per_session';
+
         db.serialize(() => {
-            // First, ensure the skill exists in the skills table
-            const skillInsertQuery = 'INSERT OR IGNORE INTO skills (name) VALUES (?)';
-            db.run(skillInsertQuery, [normalizedName], function(err) {
+            // First, ensure the skill exists in the skills table (upsert with course fields)
+            const skillInsertQuery = `INSERT OR IGNORE INTO skills (name, is_course, total_sessions, payment_plan) VALUES (?, ?, ?, ?)`;
+            db.run(skillInsertQuery, [normalizedName, isCourseFlag, totalSessions, paymentPlan], function(err) {
                 if (err) {
                     console.error('Error inserting skill:', err);
                     return res.status(500).json({ message: 'Server error' });
                 }
 
-                // Get the skill ID
-                const skillSelectQuery = 'SELECT id FROM skills WHERE name = ?';
-                db.get(skillSelectQuery, [normalizedName], (err, skillRow) => {
+                // If skill already existed we still want to ensure its fields are updated to match provided values
+                const skillUpdateQuery = `UPDATE skills SET is_course = ?, total_sessions = ?, payment_plan = ? WHERE name = ?`;
+                db.run(skillUpdateQuery, [isCourseFlag, totalSessions, paymentPlan, normalizedName], (err) => {
                     if (err) {
-                        console.error('Error selecting skill:', err);
+                        console.error('Error updating skill fields:', err);
                         return res.status(500).json({ message: 'Server error' });
                     }
 
-                    if (!skillRow) {
-                        return res.status(500).json({ message: 'Skill not found after insertion' });
-                    }
+                    // Get the skill ID
+                    const skillSelectQuery = 'SELECT id FROM skills WHERE name = ?';
 
-                    const skillId = skillRow.id;
-
-                    // Insert the user-skill relationship
-                    const relationQuery = `
-                        INSERT OR REPLACE INTO user_skills (user_id, skill_id, skill_type)
-                        VALUES (?, ?, ?)
-                    `;
-                    
-                    db.run(relationQuery, [userId, skillId, type], function(err) {
+                    db.get(skillSelectQuery, [normalizedName], (err, skillRow) => {
                         if (err) {
-                            console.error('Error adding skill to user:', err);
+                            console.error('Error selecting skill:', err);
                             return res.status(500).json({ message: 'Server error' });
                         }
 
-                        res.status(201).json({ message: `Skill '${normalizedName}' added to ${type} list` });
+                        if (!skillRow) {
+                            return res.status(500).json({ message: 'Skill not found after insertion' });
+                        }
+
+                        const skillId = skillRow.id;
+
+                        // Insert the user-skill relationship
+                        const relationQuery = `
+                            INSERT OR REPLACE INTO user_skills (user_id, skill_id, skill_type)
+                            VALUES (?, ?, ?)
+                        `;
+                        
+                        db.run(relationQuery, [userId, skillId, type], function(err) {
+                            if (err) {
+                                console.error('Error adding skill to user:', err);
+                                return res.status(500).json({ message: 'Server error' });
+                            }
+
+                            res.status(201).json({ message: `Skill '${normalizedName}' added to ${type} list` });
+                        });
                     });
                 });
             });

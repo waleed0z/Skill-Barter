@@ -9,6 +9,8 @@ class SkillBarterApp {
     init() {
         this.setupEventListeners();
         this.updateUI();
+        // ensure teach course toggle behavior is initialized
+        this.toggleTeachCourseInputs();
     }
 
     setupEventListeners() {
@@ -288,9 +290,22 @@ class SkillBarterApp {
         if (!skillName) return;
 
         try {
+            // include optional course fields for teach skills
+            const body = { name: skillName, type };
+            if (type === 'TEACH') {
+                const isCourse = document.getElementById('teachIsCourse')?.checked || false;
+                const totalSessionsVal = document.getElementById('teachTotalSessions')?.value;
+                const paymentPlanVal = document.getElementById('teachPaymentPlan')?.value;
+                if (isCourse) {
+                    body.isCourse = true;
+                    if (totalSessionsVal) body.totalSessions = parseInt(totalSessionsVal);
+                    if (paymentPlanVal) body.paymentPlan = paymentPlanVal;
+                }
+            }
+
             await this.apiCall('/skills', {
                 method: 'POST',
-                body: JSON.stringify({ name: skillName, type })
+                body: JSON.stringify(body)
             });
 
             skillInput.value = '';
@@ -298,6 +313,19 @@ class SkillBarterApp {
         } catch (error) {
             console.error('Error adding skill:', error);
         }
+    }
+
+    // Show/hide course inputs when teachIsCourse toggled
+    toggleTeachCourseInputs() {
+        const checkbox = document.getElementById('teachIsCourse');
+        const totalInput = document.getElementById('teachTotalSessions');
+        const planSelect = document.getElementById('teachPaymentPlan');
+        if (!checkbox) return;
+        checkbox.addEventListener('change', (e) => {
+            const show = e.target.checked;
+            if (totalInput) totalInput.style.display = show ? 'inline-block' : 'none';
+            if (planSelect) planSelect.style.display = show ? 'inline-block' : 'none';
+        });
     }
 
     // Availability methods
@@ -514,7 +542,7 @@ class SkillBarterApp {
 
     async loadUserRatings() {
         try {
-            const ratings = await this.apiCall('/ratings');
+            const ratings = await this.apiCall('/ratings?direction=received');
             const container = document.getElementById('ratingsList');
 
             if (ratings && ratings.length > 0) {
@@ -522,10 +550,13 @@ class SkillBarterApp {
                 ratings.forEach(rating => {
                     const ratingElement = document.createElement('div');
                     ratingElement.className = 'alert alert-light';
+                    // Handle both ratee_name (received) and rater_name (given) for flexibility
+                    const personName = rating.ratee_name || rating.rater_name || 'Unknown';
+                    const skillName = rating.skill_name || 'Unknown Skill';
                     ratingElement.innerHTML = `
                         <div class="d-flex justify-content-between">
                             <div>
-                                <h6>${rating.skill_name} - ${rating.ratee_name}</h6>
+                                <h6>${skillName} - ${personName}</h6>
                                 <div class="text-warning">${this.renderStarRating(rating.rating)}</div>
                                 <p>${rating.review || 'No review provided'}</p>
                                 <small class="text-muted">Rated on ${new Date(rating.created_at).toLocaleDateString()}</small>

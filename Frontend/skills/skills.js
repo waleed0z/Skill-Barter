@@ -64,7 +64,20 @@ function addSkillToUI(inputId, listId, className = "") {
   input.value = "";
 
   // Send to API
-  addSkill(skillName, skillType)
+  // collect optional course fields when adding teach skills
+  const options = {};
+  if (inputId === 'teachInput') {
+    const isCourse = document.getElementById('teachIsCourse')?.checked || false;
+    const totalSessions = parseInt(document.getElementById('teachTotalSessions')?.value) || undefined;
+    const paymentPlan = document.getElementById('teachPaymentPlan')?.value || undefined;
+    if (isCourse) {
+      options.isCourse = true;
+      if (totalSessions) options.totalSessions = totalSessions;
+      if (paymentPlan) options.paymentPlan = paymentPlan;
+    }
+  }
+
+  addSkill(skillName, skillType, options)
     .then(() => console.log(`Skill "${skillName}" added successfully`))
     .catch(error => {
       console.error(`Failed to add skill "${skillName}":`, error);
@@ -87,3 +100,15 @@ document.querySelector(".logout-btn").addEventListener("click", () => {
 });
 
 window.addEventListener('load', initSkills);
+
+// Show/hide course-specific inputs when checkbox toggled
+const teachIsCourseCheckbox = document.getElementById('teachIsCourse');
+if (teachIsCourseCheckbox) {
+  teachIsCourseCheckbox.addEventListener('change', (e) => {
+    const show = e.target.checked;
+    const totalInput = document.getElementById('teachTotalSessions');
+    const planSelect = document.getElementById('teachPaymentPlan');
+    if (totalInput) totalInput.style.display = show ? 'inline-block' : 'none';
+    if (planSelect) planSelect.style.display = show ? 'inline-block' : 'none';
+  });
+}

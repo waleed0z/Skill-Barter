@@ -144,7 +144,16 @@
                                         <form id="addTeachSkillForm" class="mt-3">
                                             <div class="input-group">
                                                 <input type="text" class="form-control" id="teachSkillInput" placeholder="Add a skill you teach" required>
-                                                <select class="form-select" id="teachSkillType">
+                                                <div class="input-group-text">
+                                                    <input class="form-check-input mt-0" type="checkbox" id="teachIsCourse" aria-label="Multi-session course">
+                                                </div>
+                                                <input type="number" class="form-control" id="teachTotalSessions" placeholder="Total sessions" min="1" style="max-width:120px;display:none;margin-left:8px;">
+                                                <select class="form-select" id="teachPaymentPlan" style="display:none;max-width:160px;margin-left:8px;">
+                                                    <option value="per_session">Per session</option>
+                                                    <option value="per_course">Per course</option>
+                                                    <option value="hybrid">Hybrid</option>
+                                                </select>
+                                                <select class="form-select d-none" id="teachSkillType">
                                                     <option value="TEACH">Teach</option>
                                                 </select>
                                                 <button type="submit" class="btn btn-success">Add</button>
