@@ -105,7 +105,7 @@ class SkillBarterApp {
 
             this.token = data.token;
             this.currentUser = data.user;
-            
+
             localStorage.setItem('token', this.token);
             localStorage.setItem('user', JSON.stringify(this.currentUser));
 
@@ -136,7 +136,7 @@ class SkillBarterApp {
 
             this.token = data.token;
             this.currentUser = data.user;
-            
+
             localStorage.setItem('token', this.token);
             localStorage.setItem('user', JSON.stringify(this.currentUser));
 
@@ -205,11 +205,11 @@ class SkillBarterApp {
     async loadUserSkills() {
         try {
             const skills = await this.apiCall('/skills/user');
-            
+
             // Display teach skills
             const teachSkillsContainer = document.getElementById('teachSkillsList');
             teachSkillsContainer.innerHTML = '';
-            
+
             if (skills.teach && skills.teach.length > 0) {
                 skills.teach.forEach(skill => {
                     const skillElement = document.createElement('div');
@@ -227,7 +227,7 @@ class SkillBarterApp {
             // Display learn skills
             const learnSkillsContainer = document.getElementById('learnSkillsList');
             learnSkillsContainer.innerHTML = '';
-            
+
             if (skills.learn && skills.learn.length > 0) {
                 skills.learn.forEach(skill => {
                     const skillElement = document.createElement('div');
@@ -428,7 +428,7 @@ class SkillBarterApp {
     }
 
     getStatusBadgeClass(status) {
-        switch(status) {
+        switch (status) {
             case 'scheduled': return 'primary';
             case 'completed': return 'success';
             case 'cancelled': return 'danger';
@@ -786,7 +786,7 @@ class SkillBarterApp {
     }
 
     getInvitationStatusClass(status) {
-        switch(status) {
+        switch (status) {
             case 'accepted': return 'success';
             case 'declined': return 'danger';
             case 'pending': return 'warning';
@@ -873,13 +873,24 @@ class SkillBarterApp {
         try {
             const results = await this.apiCall(`/skills/search?q=${encodeURIComponent(query)}`);
             const resultsContainer = document.getElementById('searchResults');
-            
+
             if (results && results.length > 0) {
                 resultsContainer.innerHTML = '<h5>Search Results:</h5>';
                 results.forEach(skill => {
                     const skillElement = document.createElement('div');
-                    skillElement.className = 'alert alert-secondary';
-                    skillElement.textContent = skill;
+                    skillElement.className = 'alert alert-secondary mb-1 cursor-pointer';
+                    // Make search results clickable
+                    skillElement.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center" onclick="app.selectSearchedSkill('${this.escapeHtml(skill)}')">
+                            <span>${this.escapeHtml(skill)}</span>
+                            <small class="text-primary">Find Matches &rarr;</small>
+                        </div>
+                    `;
+                    // Add hover effect style
+                    skillElement.style.cursor = 'pointer';
+                    skillElement.onmouseover = () => skillElement.classList.add('bg-light');
+                    skillElement.onmouseout = () => skillElement.classList.remove('bg-light');
+
                     resultsContainer.appendChild(skillElement);
                 });
             } else {
@@ -888,6 +899,19 @@ class SkillBarterApp {
         } catch (error) {
             console.error('Error searching skills:', error);
         }
+    }
+
+    // Handle selection of a searched skill
+    selectSearchedSkill(skillName) {
+        // Switch to matching tab
+        showDashboardTab('matching');
+
+        // Populate the match search input
+        const matchInput = document.getElementById('matchSkillInput');
+        matchInput.value = skillName;
+
+        // Trigger the search
+        this.findMatches();
     }
 
     updateUI() {
@@ -906,7 +930,7 @@ class SkillBarterApp {
     logout() {
         this.token = null;
         this.currentUser = null;
-        
+
         localStorage.removeItem('token');
         localStorage.removeItem('user');
 
@@ -961,7 +985,7 @@ function showDashboardTab(tabId) {
 let app;
 document.addEventListener('DOMContentLoaded', () => {
     app = new SkillBarterApp();
-    
+
     // If user is already logged in, go to dashboard
     if (app.token && app.currentUser) {
         showSection('dashboard');
